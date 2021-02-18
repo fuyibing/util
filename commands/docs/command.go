@@ -5,15 +5,14 @@
 package docs
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/fuyibing/util/commands/base"
 )
 
 type command struct {
 	base.Command
-}
-
-func (o *command) Run(args []string) error {
-	return nil
 }
 
 func New() base.CommandInterface {
@@ -22,4 +21,11 @@ func New() base.CommandInterface {
 	o.SetName("docs")
 	o.SetDescription("Build application documents")
 	return o
+}
+
+func (o *command) Run(args []string) error {
+	if err := o.ParseArguments(args); err != nil {
+		return err
+	}
+	return errors.New(fmt.Sprintf("%s: todo Run() method", o.Name()))
 }

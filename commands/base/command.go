@@ -137,6 +137,7 @@ func (o *Command) Run(args []string) error {
 	return errors.New(fmt.Sprintf("%s: Run() method not defined", o.name))
 }
 
+// Set command description.
 func (o *Command) SetDescription(description string) CommandInterface {
 	o.description = description
 	return o

@@ -21,13 +21,13 @@ type ManagerInterface interface {
 	Run([]string) error
 }
 
-// 命令行管理器结构体.
+// Command line manager struct.
 type management struct {
 	mu       *sync.RWMutex
 	commands map[string]base.CommandInterface
 }
 
-// 添加命令接口.
+// Add command to manager.
 func (o *management) AddCommand(cs ...base.CommandInterface) ManagerInterface {
 	o.mu.Lock()
 	defer o.mu.Unlock()
@@ -37,25 +37,25 @@ func (o *management) AddCommand(cs ...base.CommandInterface) ManagerInterface {
 	return o
 }
 
-// 运行命令行工具.
+// Run command manager.
 func (o *management) Run(args []string) error {
-	// 1. 初始化入参.
+	// 1. initialize arguments.
 	if args == nil {
 		args = os.Args
 	}
-	// 2. 命令参数不少于2位.
+	// 2. arguments length less than 2 fields.
 	if args == nil || len(args) < 2 {
 		return errors.New(fmt.Sprintf("Command: name not specified"))
 	}
-	// 3. 命令名称.
+	// 3. command name.
 	name := args[1]
-	// 3.1 今天已注册.
+	// 3.1 run added command.
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	if c, ok := o.commands[name]; ok {
 		return c.Run(args)
 	}
-	// 4. 返回未注册错误
+	// 4. return error if not added.
 	return errors.New(fmt.Sprintf("Command: undefined command: %s", name))
 }
 

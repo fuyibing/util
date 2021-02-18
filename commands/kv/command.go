@@ -5,7 +5,7 @@
 //
 // Dependent on iris framework, allow create model、
 // service、logic、controller.
-package makes
+package kv
 
 import (
 	"errors"
@@ -24,17 +24,8 @@ func New() base.CommandInterface {
 	// initialize fields and set command name.
 	o := new(command)
 	o.Initialize()
-	o.SetName("make")
-	o.SetDescription("Build application files for iris framework.")
-	// 2. add option.
-	o.AddOption(
-		base.NewOption("type", base.OptionModeRequired, base.OptionValueModeString).
-			SetDescription("Specify your file type, accept: model|service|logic|controller"),
-		base.NewOption("name", base.OptionModeRequired, base.OptionValueModeString).
-			SetDescription("Specify your file name"),
-		base.NewOption("override", base.OptionModeOptional, base.OptionValueModeNone).
-			SetDescription("Override if file exists"),
-	)
+	o.SetName("kv")
+	o.SetDescription("Build application config use consul kv.")
 	return o
 }
 
