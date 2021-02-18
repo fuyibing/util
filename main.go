@@ -11,7 +11,7 @@ import (
 
 func main() {
 	m := commands.Default()
-	if err := m.Run(nil); err != nil {
+	if err := m.Run(); err != nil {
 		fmt.Printf("%v.\n", err)
 		return
 	}

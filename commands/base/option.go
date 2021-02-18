@@ -49,7 +49,7 @@ type OptionInterface interface {
 	ToInt() (val int, err error)
 	ToInt64() (val int64, err error)
 	ToString() (val string, err error)
-	Usage()
+	Usage(string)
 	Validate() error
 }
 
@@ -198,13 +198,13 @@ func (o *option) ToString() (string, error) {
 }
 
 // Print usage.
-func (o *option) Usage() {
-	var s = ""
+func (o *option) Usage(prefix string) {
+	var s = prefix
 	// 1. short option name
 	if o.shortName != "" {
-		s = fmt.Sprintf("  -%s,", o.shortName)
+		s = fmt.Sprintf("%s -%s,", prefix, o.shortName)
 	} else {
-		s = "     "
+		s = fmt.Sprintf("%s    ", prefix)
 	}
 	// 2. option name
 	s += fmt.Sprintf("--%s", o.name)
@@ -241,7 +241,7 @@ func (o *option) Usage() {
 		}
 	}
 	// n. print usage.
-	fmt.Printf("  %-48s %s\n", s, o.description)
+	fmt.Printf("%-48s %s\n", s, o.description)
 }
 
 // Validate option.

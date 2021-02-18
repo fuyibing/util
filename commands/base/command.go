@@ -13,19 +13,22 @@ import (
 // Command interface.
 type CommandInterface interface {
 	AddOption(...OptionInterface) CommandInterface
+	GetDescription() string
+	GetName() string
 	GetOption(string) (OptionInterface, bool)
 	Initialize() CommandInterface
-	Description() string
-	Name() string
+	IsHidden() bool
 	ParseArguments([]string) error
-	Run([]string) error
+	Run(ManagerInterface, []string) error
 	SetDescription(string) CommandInterface
+	SetHidden(bool) CommandInterface
 	SetName(string) CommandInterface
-	Usage()
+	Usage(ManagerInterface)
 }
 
 // Command struct.
 type Command struct {
+	hidden      bool
 	mu          *sync.RWMutex
 	name        string
 	description string
@@ -50,6 +53,16 @@ func (o *Command) AddOption(opts ...OptionInterface) CommandInterface {
 	return o
 }
 
+// Return command description.
+func (o *Command) GetDescription() string {
+	return o.description
+}
+
+// Return command name.
+func (o *Command) GetName() string {
+	return o.name
+}
+
 // Get option by name.
 func (o *Command) GetOption(name string) (OptionInterface, bool) {
 	o.mu.RLock()
@@ -60,21 +73,16 @@ func (o *Command) GetOption(name string) (OptionInterface, bool) {
 	return nil, false
 }
 
+// Command is hidden.
+func (o *Command) IsHidden() bool {
+	return o.hidden
+}
+
 // Initialize command fields.
 func (o *Command) Initialize() CommandInterface {
 	o.mu = new(sync.RWMutex)
 	o.options = make(map[string]OptionInterface)
 	return o
-}
-
-// Return command description.
-func (o *Command) Description() string {
-	return o.description
-}
-
-// Return command name.
-func (o *Command) Name() string {
-	return o.name
 }
 
 // Parse arguments.
@@ -133,13 +141,19 @@ func (o *Command) ParseArguments(args []string) error {
 }
 
 // Run command.
-func (o *Command) Run(args []string) error {
+func (o *Command) Run(manager ManagerInterface, args []string) error {
 	return errors.New(fmt.Sprintf("%s: Run() method not defined", o.name))
 }
 
 // Set command description.
 func (o *Command) SetDescription(description string) CommandInterface {
 	o.description = description
+	return o
+}
+
+// Set status hidden.
+func (o *Command) SetHidden(hidden bool) CommandInterface {
+	o.hidden = hidden
 	return o
 }
 
@@ -150,16 +164,21 @@ func (o *Command) SetName(name string) CommandInterface {
 }
 
 // Print usage.
-func (o *Command) Usage() {
+func (o *Command) Usage(manager ManagerInterface) {
 	// 1. print usage.
-	fmt.Printf("Usage: %s %s [OPTIOINS]\n", "go run main.go", o.name)
+	fmt.Printf("Application : %s/%s\n", manager.GetName(), manager.GetVersion())
+	fmt.Printf("Usage       : %s %s [OPTOINS]\n", "go run main.go", o.name)
 	// 2. print options
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	if len(o.options) > 0 {
-		fmt.Print("Options: \n")
+		i := 0
 		for _, c := range o.options {
-			c.Usage()
+			if i++; i == 1 {
+				c.Usage("Options     :")
+			} else {
+				c.Usage("            :")
+			}
 		}
 	}
 }
