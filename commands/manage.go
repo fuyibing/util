@@ -78,7 +78,7 @@ func (o *management) Run(args ...string) error {
 	}
 	// 2. arguments length less than 2 fields.
 	if args == nil || len(args) < 2 {
-		return errors.New(fmt.Sprintf("Command: no command name"))
+		return errors.New(fmt.Sprintf("Command: command name not specified"))
 	}
 	// 3. command name.
 	name := args[1]
@@ -89,22 +89,21 @@ func (o *management) Run(args ...string) error {
 		return c.Run(o, args)
 	}
 	// 4. return error if not added.
-	return errors.New(fmt.Sprintf("Command: undefined command: %s", name))
+	return errors.New(fmt.Sprintf("Command: command name not defined: %s", name))
 }
 
 // Initialize manager instance.
 func (o *management) initialize() {
-	// reset name and version.
 	o.mu = new(sync.RWMutex)
 	o.commands = make(map[string]base.CommandInterface)
 	o.name = DefaultCommandName
 	o.version = DefaultCommandVersion
 	// parse yaml.
-	tmp := &struct {
+	var tmp = &struct {
 		Name    string `yaml:"name"`
 		Version string `yaml:"version"`
 	}{}
-	for _, file := range []string{"./config/app.yaml", "../config/app.yaml"} {
+	for _, file := range []string{"./tmp/app.yaml", "../tmp/app.yaml", "../config/app.yaml"} {
 		bs, err := ioutil.ReadFile(file)
 		if err != nil {
 			continue
@@ -112,6 +111,7 @@ func (o *management) initialize() {
 		if err = yaml.Unmarshal(bs, tmp); err != nil {
 			continue
 		}
+		break
 	}
 	if tmp.Name != "" {
 		o.name = tmp.Name

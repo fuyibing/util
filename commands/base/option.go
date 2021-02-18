@@ -118,9 +118,10 @@ func (o *option) SetValue(value interface{}) OptionInterface {
 
 // To boolean value.
 func (o *option) ToBool() (bool, error) {
-	// only work on none value.
+	// can not convert to boolean.
 	if o.valueMode != OptionValueModeNone {
-		return false, errors.New("only work with none value option")
+		return false,
+			errors.New(fmt.Sprintf("Option %s: can not convert not boolean option to boolean", o.name))
 	}
 	// return false if not specified.
 	if o.value == nil {
@@ -135,7 +136,8 @@ func (o *option) ToBool() (bool, error) {
 	// parse string to boolean.
 	b, err := strconv.ParseBool(strings.ToLower(fmt.Sprintf("%v", o.value)))
 	if err != nil {
-		return false, errors.New("not boolean value for none value option")
+		return false,
+			errors.New(fmt.Sprintf("Option %s: can not convert to boolean: %s", o.name, v))
 	}
 	return b, nil
 }
@@ -144,7 +146,8 @@ func (o *option) ToBool() (bool, error) {
 func (o *option) ToInt() (int, error) {
 	// not integer.
 	if o.valueMode != OptionValueModeInteger {
-		return 0, errors.New("only work with integer value option")
+		return 0,
+			errors.New(fmt.Sprintf("Option %s: can not convert not integer option to integer", o.name))
 	}
 	// assign value.
 	var v interface{}
@@ -153,12 +156,14 @@ func (o *option) ToInt() (int, error) {
 	} else if o.defaultValue != nil {
 		v = o.defaultValue
 	} else {
-		return 0, errors.New("integer value not specified")
+		return 0,
+			errors.New(fmt.Sprintf("Option %s: integer value not specified", o.name))
 	}
 	// parse to integer
 	vi, err := strconv.ParseInt(fmt.Sprintf("%v", v), 0, 32)
 	if err != nil {
-		return 0, err
+		return 0,
+			errors.New(fmt.Sprintf("Option %s: can not convert to integer: %v", o.name, v))
 	}
 	return int(vi), nil
 }
@@ -166,7 +171,8 @@ func (o *option) ToInt() (int, error) {
 // To integer 64 value.
 func (o *option) ToInt64() (int64, error) {
 	if o.valueMode != OptionValueModeInteger {
-		return 0, errors.New("only work with integer value option")
+		return 0,
+			errors.New(fmt.Sprintf("Option %s: can not convert not integer option to integer", o.name))
 	}
 	// assign value.
 	var v interface{}
@@ -175,12 +181,14 @@ func (o *option) ToInt64() (int64, error) {
 	} else if o.defaultValue != nil {
 		v = o.defaultValue
 	} else {
-		return 0, errors.New("integer value not specified")
+		return 0,
+			errors.New(fmt.Sprintf("Option %s: integer value not specified", o.name))
 	}
 	// parse to integer
 	vi, err := strconv.ParseInt(fmt.Sprintf("%v", v), 0, 64)
 	if err != nil {
-		return 0, err
+		return 0,
+			errors.New(fmt.Sprintf("Option %s: can not convert to integer: %v", o.name, v))
 	}
 	return vi, nil
 }
@@ -188,7 +196,8 @@ func (o *option) ToInt64() (int64, error) {
 // To string value.
 func (o *option) ToString() (string, error) {
 	if o.valueMode != OptionValueModeString {
-		return "", errors.New("only work with string value option")
+		return "",
+			errors.New(fmt.Sprintf("Option %s: can not convert not string option to string", o.name))
 	}
 	var v interface{}
 	if o.value != nil {
@@ -196,7 +205,8 @@ func (o *option) ToString() (string, error) {
 	} else if o.defaultValue != nil {
 		v = o.defaultValue
 	} else {
-		return "", errors.New("string value not specified")
+		return "",
+			errors.New(fmt.Sprintf("Option %s: string value not specified", o.name))
 	}
 	return fmt.Sprintf("%v", v), nil
 }

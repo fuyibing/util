@@ -24,43 +24,42 @@ type uploadKv struct {
 	content string
 }
 
+// Run upload.
 func (o *uploadKv) run(key string) error {
 	var err error
+	var fi = 0
 	var fs []os.FileInfo
 	var fp *os.File
 	var pair *api.KVPair
-	// read fail.
-	fi := 0
-	fs, err = ioutil.ReadDir(o.path)
-	if err != nil {
-		return err
+	// 1. read directory error.
+	if fs, err = ioutil.ReadDir(o.path); err != nil {
+		return errors.New(fmt.Sprintf("Command %s: open directory error: %v", o.cmd.GetName(), o.path))
 	}
-	// exist check.
-	pair, _, err = o.cli.KV().Get(key, nil)
-	if err != nil {
-		return err
+	// 2. open remote key error.
+	if pair, _, err = o.cli.KV().Get(key, nil); err != nil {
+		return errors.New(fmt.Sprintf("Command %s: open remote key error: %v", o.cmd.GetName(), err))
 	}
 	if pair != nil {
-		return errors.New("key exists")
+		return errors.New(fmt.Sprintf("Command %s: remote key exist already: %v", o.cmd.GetName(), key))
 	}
-	// open directory.
+	// 3. seek directory.
 	for _, f := range fs {
-		// continue if directory.
+		// 3.1 ignore if is directory.
 		if f.IsDir() {
 			continue
 		}
-		// continue if not yaml.
+		// 3.2 ignore if not YAML file.
 		if !regexpIsYamlFile.MatchString(f.Name()) {
 			continue
 		}
-		// head.
+		// 3.3 file meta data.
 		o.content += fmt.Sprintf("# [%s]\n", f.Name())
 		o.content += fmt.Sprintf("%s: \n", f.Name())
-		// open file.
+		// 3.4 return if open file error.
 		if fp, err = os.Open(o.path + "/" + f.Name()); err != nil {
 			return err
 		}
-		// loop line.
+		// 3.5 read line by line.
 		fi++
 		br := bufio.NewReader(fp)
 		for {
@@ -80,6 +79,7 @@ func (o *uploadKv) run(key string) error {
 			// append line.
 			o.content += fmt.Sprintf("  %s\n", s)
 		}
+		// 3.6 close file.
 		_ = fp.Close()
 		o.content += "\n"
 	}
@@ -89,7 +89,6 @@ func (o *uploadKv) run(key string) error {
 	}
 	// key pair.
 	pair = &api.KVPair{Key: key}
-	pair.ModifyIndex = 0
 	pair.Value = []byte(o.content)
 	// put key.
 	_, err = o.cli.KV().Put(pair, nil)

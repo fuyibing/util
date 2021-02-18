@@ -5,6 +5,8 @@
 package kv
 
 import (
+	"errors"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -85,7 +87,7 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 	// build: client
 	var cli *api.Client
 	if cli, err = api.NewClient(cfg); err != nil {
-		return err
+		return errors.New(fmt.Sprintf("Command %s: create consul client error: %v", o.GetName(), err))
 	}
 	// build: name & path.
 	var name, path = "", ""
