@@ -59,6 +59,7 @@ func (o *uploadKv) run(key string) error {
 		if fp, err = os.Open(o.path + "/" + f.Name()); err != nil {
 			return err
 		}
+		o.cmd.Info("Command %s: upload %s", o.cmd.GetName(), f.Name())
 		// 3.5 read line by line.
 		fi++
 		br := bufio.NewReader(fp)

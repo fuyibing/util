@@ -66,10 +66,12 @@ func (o *downloadKv) parseContent() (err error) {
 func (o *downloadKv) readContent(name string) (string, error) {
 	p, _, err := o.cli.KV().Get(name, nil)
 	if err != nil {
-		return "", err
+		return "",
+			errors.New(fmt.Sprintf("Command %s: open remote key error: %s", o.cmd.GetName(), err))
 	}
 	if p == nil {
-		return "", errors.New(fmt.Sprintf("Command %s: key not found: %s", o.cmd.GetName(), name))
+		return "",
+			errors.New(fmt.Sprintf("Command %s: key not found: %s", o.cmd.GetName(), name))
 	}
 	return string(p.Value), nil
 }

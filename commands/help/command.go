@@ -23,7 +23,6 @@ func New() base.CommandInterface {
 }
 
 func (o *command) Run(manager base.ManagerInterface, args []string) error {
-	// Help command.
 	if len(args) >= 3 {
 		key := args[2]
 		if cmd := manager.GetCommand(key); cmd != nil {
@@ -31,7 +30,6 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 			return nil
 		}
 	}
-	// Command list.
 	fmt.Printf("Application : %s/%s\n", manager.GetName(), manager.GetVersion())
 	fmt.Printf("Usage       : go run main.go <COMMAND> [OPTIONS]\n")
 	i := 0

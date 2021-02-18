@@ -22,7 +22,7 @@ func New() base.CommandInterface {
 	o := new(command)
 	o.Initialize()
 	o.SetName("make")
-	o.SetDescription("脚手架, 创建Model、Service、Logic、Controller文件")
+	o.SetDescription("Create application file")
 	// 2. add option.
 	o.AddOption(
 		base.NewOption("type", base.OptionModeRequired, base.OptionValueModeString).

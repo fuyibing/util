@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"time"
 
 	"github.com/hashicorp/consul/api"
 
@@ -30,14 +29,13 @@ func New() base.CommandInterface {
 	o := new(command)
 	o.Initialize()
 	o.SetName("kv")
-	o.SetDescription("创建项目配置文件")
+	o.SetDescription("Create application config files use consul")
 	o.AddOption(
-		base.NewOption("addr", base.OptionModeRequired, base.OptionValueModeString).SetShortName("a").SetDescription("Consul地址"),
-		base.NewOption("name", base.OptionModeRequired, base.OptionValueModeString).SetShortName("n").SetDescription("Consul中注册的Key名称"),
-		base.NewOption("path", base.OptionModeOptional, base.OptionValueModeString).SetShortName("p").SetDefaultValue("./tmp").SetDescription("配置文件目录, 默认: ./tmp"),
-		base.NewOption("scheme", base.OptionModeOptional, base.OptionValueModeString).SetShortName("s").SetDefaultValue("http").SetDescription("协议名称, 可选: http, https, 默认: http"),
-		base.NewOption("timeout", base.OptionModeOptional, base.OptionValueModeInteger).SetDefaultValue(2).SetDescription("超时时长, 单位: 秒"),
-		base.NewOption("upload", base.OptionModeOptional, base.OptionValueModeNone).SetShortName("u").SetDescription("上传初始配置至Consul"),
+		base.NewOption("addr", base.OptionModeRequired, base.OptionValueModeString).SetShortName("a").SetDescription("Consul address, eg: 192.168.1.1:8500"),
+		base.NewOption("name", base.OptionModeRequired, base.OptionValueModeString).SetShortName("n").SetDescription("Consul key name, eg: app/config"),
+		base.NewOption("path", base.OptionModeOptional, base.OptionValueModeString).SetShortName("p").SetDefaultValue("./tmp").SetDescription("Config file directory name (default: ./tmp)"),
+		base.NewOption("scheme", base.OptionModeOptional, base.OptionValueModeString).SetShortName("s").SetDefaultValue("http").SetDescription("Consul scheme (accept: http|https, default: http)"),
+		base.NewOption("upload", base.OptionModeOptional, base.OptionValueModeNone).SetShortName("u").SetDescription("Upload local config files data to remote"),
 	)
 	return o
 }
@@ -47,7 +45,6 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 	var err error
 	var ok bool
 	var opt base.OptionInterface
-	var timeout = 0
 	// argument parse.
 	if err = o.ParseArguments(args); err != nil {
 		return err
@@ -62,14 +59,6 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 	}
 	// config: init.
 	cfg := api.DefaultConfig()
-	// config: use timeout.
-	if opt, err = o.GetOption("timeout"); err != nil {
-		return err
-	}
-	if timeout, err = opt.ToInt(); err != nil {
-		return err
-	}
-	cfg.WaitTime = time.Duration(timeout) * time.Second
 	// config: use scheme.
 	if opt, err = o.GetOption("scheme"); err != nil {
 		return err

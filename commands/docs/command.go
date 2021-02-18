@@ -19,7 +19,7 @@ func New() base.CommandInterface {
 	o := &command{}
 	o.Initialize()
 	o.SetName("docs")
-	o.SetDescription("创建项目文档")
+	o.SetDescription("Create application documents")
 	return o
 }
 
