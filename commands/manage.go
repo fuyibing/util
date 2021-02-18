@@ -70,8 +70,6 @@ func (o *management) GetVersion() string {
 	return o.version
 }
 
-func (o *management) Info(text string, args ...interface{}) {}
-
 // Run command manager.
 func (o *management) Run(args ...string) error {
 	// 1. initialize arguments.
@@ -80,7 +78,7 @@ func (o *management) Run(args ...string) error {
 	}
 	// 2. arguments length less than 2 fields.
 	if args == nil || len(args) < 2 {
-		return errors.New(fmt.Sprintf("Command: command name not specified"))
+		return errors.New(fmt.Sprintf("Command: no command name"))
 	}
 	// 3. command name.
 	name := args[1]

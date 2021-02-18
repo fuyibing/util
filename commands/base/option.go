@@ -50,7 +50,6 @@ type OptionInterface interface {
 	ToInt64() (val int64, err error)
 	ToString() (val string, err error)
 	Usage(string)
-	Validate() error
 }
 
 // Option struct.
@@ -74,10 +73,14 @@ func NewOption(name string, mode OptionMode, valueMode OptionValueMode) OptionIn
 }
 
 // Is optional mode.
-func (o *option) IsOptional() bool { return o.mode == OptionModeOptional }
+func (o *option) IsOptional() bool {
+	return o.mode == OptionModeOptional
+}
 
 // Is requirement mode.
-func (o *option) IsRequired() bool { return o.mode == OptionModeRequired }
+func (o *option) IsRequired() bool {
+	return o.mode == OptionModeRequired
+}
 
 // Return option name.
 func (o *option) Name() string {
@@ -117,21 +120,22 @@ func (o *option) SetValue(value interface{}) OptionInterface {
 func (o *option) ToBool() (bool, error) {
 	// only work on none value.
 	if o.valueMode != OptionValueModeNone {
-		return false, errors.New("not none value option")
+		return false, errors.New("only work with none value option")
 	}
-	// not specified.
+	// return false if not specified.
 	if o.value == nil {
 		return false, nil
 	}
-	// return default if option value is empty string.
+	// read option value.
 	v := fmt.Sprintf("%v", o.value)
+	// return true if value is empty.
 	if v == "" {
 		return true, nil
 	}
 	// parse string to boolean.
 	b, err := strconv.ParseBool(strings.ToLower(fmt.Sprintf("%v", o.value)))
 	if err != nil {
-		return false, errors.New("not boolean value")
+		return false, errors.New("not boolean value for none value option")
 	}
 	return b, nil
 }
@@ -140,7 +144,7 @@ func (o *option) ToBool() (bool, error) {
 func (o *option) ToInt() (int, error) {
 	// not integer.
 	if o.valueMode != OptionValueModeInteger {
-		return 0, errors.New("not integer value option")
+		return 0, errors.New("only work with integer value option")
 	}
 	// assign value.
 	var v interface{}
@@ -162,7 +166,7 @@ func (o *option) ToInt() (int, error) {
 // To integer 64 value.
 func (o *option) ToInt64() (int64, error) {
 	if o.valueMode != OptionValueModeInteger {
-		return 0, errors.New("not integer value option")
+		return 0, errors.New("only work with integer value option")
 	}
 	// assign value.
 	var v interface{}
@@ -184,7 +188,7 @@ func (o *option) ToInt64() (int64, error) {
 // To string value.
 func (o *option) ToString() (string, error) {
 	if o.valueMode != OptionValueModeString {
-		return "", errors.New("not string value option")
+		return "", errors.New("only work with string value option")
 	}
 	var v interface{}
 	if o.value != nil {
@@ -242,19 +246,4 @@ func (o *option) Usage(prefix string) {
 	}
 	// n. print usage.
 	fmt.Printf("%-48s %s\n", s, o.description)
-}
-
-// Validate option.
-func (o *option) Validate() error {
-	if o.mode == OptionModeRequired {
-		// 1.1 none value mode.
-		if o.valueMode == OptionValueModeNone {
-			return nil
-		}
-		// 1.2 string
-		if o.value == nil {
-			return errors.New(fmt.Sprintf("option %s not speicified", o.name))
-		}
-	}
-	return nil
 }

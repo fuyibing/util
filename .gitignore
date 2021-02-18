@@ -1,5 +1,6 @@
 # ignore directories
 .idea/
+tmp/
 
 # ignore files
 *.bak

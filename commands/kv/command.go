@@ -25,16 +25,14 @@ type command struct {
 }
 
 func New() base.CommandInterface {
-	// 创建实例.
 	o := new(command)
 	o.Initialize()
 	o.SetName("kv")
 	o.SetDescription("创建项目配置文件")
-	// 加入选项
 	o.AddOption(
 		base.NewOption("addr", base.OptionModeRequired, base.OptionValueModeString).SetShortName("a").SetDescription("Consul地址"),
 		base.NewOption("name", base.OptionModeRequired, base.OptionValueModeString).SetShortName("n").SetDescription("Consul中注册的Key名称"),
-		base.NewOption("path", base.OptionModeOptional, base.OptionValueModeString).SetShortName("p").SetDefaultValue("./config").SetDescription("配置文件目录, 默认: ./config"),
+		base.NewOption("path", base.OptionModeOptional, base.OptionValueModeString).SetShortName("p").SetDefaultValue("./tmp").SetDescription("配置文件目录, 默认: ./tmp"),
 		base.NewOption("scheme", base.OptionModeOptional, base.OptionValueModeString).SetShortName("s").SetDefaultValue("http").SetDescription("协议名称, 可选: http, https, 默认: http"),
 		base.NewOption("timeout", base.OptionModeOptional, base.OptionValueModeInteger).SetDefaultValue(2).SetDescription("超时时长, 单位: 秒"),
 		base.NewOption("upload", base.OptionModeOptional, base.OptionValueModeNone).SetShortName("u").SetDescription("上传初始配置至Consul"),

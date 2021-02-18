@@ -12,7 +12,7 @@ import (
 func main() {
 	m := commands.Default()
 	if err := m.Run(); err != nil {
-		fmt.Printf("%v.\n", err)
+		fmt.Printf("%c[%d;%d;%dm%s%c[0m\n", 0x1B, 0, 33, 41, err.Error(), 0x1B)
 		return
 	}
 }

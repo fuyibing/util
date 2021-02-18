@@ -27,5 +27,5 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 	if err := o.ParseArguments(args); err != nil {
 		return err
 	}
-	return errors.New(fmt.Sprintf("%s: todo Run() method", o.GetName()))
+	return errors.New(fmt.Sprintf("Command %s: TODO", o.GetName()))
 }

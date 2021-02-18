@@ -85,7 +85,7 @@ func (o *uploadKv) run(key string) error {
 	}
 	// no file found.
 	if fi == 0 {
-		return errors.New("no yaml file found")
+		return errors.New(fmt.Sprintf("Command %s: no yaml config file found: %s", o.cmd.GetName(), o.path))
 	}
 	// key pair.
 	pair = &api.KVPair{Key: key}

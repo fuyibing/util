@@ -72,7 +72,7 @@ func (o *Command) GetOption(name string) (OptionInterface, error) {
 	if opt, ok := o.options[name]; ok {
 		return opt, nil
 	}
-	return nil, errors.New(fmt.Sprintf("command %s: option `%s` not defined", o.name, name))
+	return nil, errors.New(fmt.Sprintf("Command %s: option not defined: %s", o.name, name))
 }
 
 // Print info.
@@ -131,7 +131,7 @@ func (o *Command) ParseArguments(args []string) error {
 		}
 		// return error if required option not specified.
 		if opt.IsRequired() && !found {
-			return errors.New(fmt.Sprintf("command %s: option `--%s` not specified", o.name, opt.Name()))
+			return errors.New(fmt.Sprintf("Command %s: option not specified: %s", o.name, opt.Name()))
 		}
 		// assign option value.
 		if found {
@@ -148,7 +148,7 @@ func (o *Command) ParseArguments(args []string) error {
 
 // Run command.
 func (o *Command) Run(manager ManagerInterface, args []string) error {
-	return errors.New(fmt.Sprintf("command %s: Run() method not defined", o.name))
+	return errors.New(fmt.Sprintf("Command %s: Run() method override", o.name))
 }
 
 // Set command description.

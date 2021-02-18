@@ -29,7 +29,7 @@ func (o *downloadKv) parseContent() (err error) {
 	// catch panic.
 	defer func() {
 		if r := recover(); r != nil {
-			err = errors.New(fmt.Sprintf("%v", r))
+			err = errors.New(fmt.Sprintf("Command %s: panic: %v", o.cmd.GetName(), r))
 		}
 	}()
 	// normal match.
@@ -48,12 +48,12 @@ func (o *downloadKv) parseContent() (err error) {
 		}
 		// append content.
 		if key == "" {
-			err = errors.New("file name not defined")
+			err = errors.New(fmt.Sprintf("Command %s: file name not defined in consul kv", o.cmd.GetName()))
 			return
 		}
 		// key not define.
 		if _, ok := o.files[key]; !ok {
-			err = errors.New("file name not defined ahead of lines")
+			err = errors.New(fmt.Sprintf("Command %s: invalid file name: %s", o.cmd.GetName(), key))
 			return
 		}
 		// append.
@@ -69,7 +69,7 @@ func (o *downloadKv) readContent(name string) (string, error) {
 		return "", err
 	}
 	if p == nil {
-		return "", errors.New(fmt.Sprintf("key not found: %s", name))
+		return "", errors.New(fmt.Sprintf("Command %s: key not found: %s", o.cmd.GetName(), name))
 	}
 	return string(p.Value), nil
 }
