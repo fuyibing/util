@@ -1,7 +1,7 @@
 // author: wsfuyibing <websearch@163.com>
 // date: 2021-02-15
 
-// Package command line manager.
+// 命令: 命令管理器.
 package commands
 
 import (
@@ -69,6 +69,8 @@ func (o *management) GetName() string {
 func (o *management) GetVersion() string {
 	return o.version
 }
+
+func (o *management) Info(text string, args ...interface{}) {}
 
 // Run command manager.
 func (o *management) Run(args ...string) error {

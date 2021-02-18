@@ -1,10 +1,7 @@
 // author: wsfuyibing <websearch@163.com>
 // date: 2021-02-17
 
-// Package make files for application.
-//
-// Dependent on iris framework, allow create model、
-// service、logic、controller.
+// 命令: 脚手架.
 package makes
 
 import (
@@ -25,7 +22,7 @@ func New() base.CommandInterface {
 	o := new(command)
 	o.Initialize()
 	o.SetName("make")
-	o.SetDescription("Build application files for iris framework.")
+	o.SetDescription("脚手架, 创建Model、Service、Logic、Controller文件")
 	// 2. add option.
 	o.AddOption(
 		base.NewOption("type", base.OptionModeRequired, base.OptionValueModeString).
@@ -43,9 +40,6 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 	if err := o.ParseArguments(args); err != nil {
 		return err
 	}
-
-
-
 
 	return errors.New(fmt.Sprintf("%s: todo Run() method", o.GetName()))
 }

@@ -1,7 +1,7 @@
 // author: wsfuyibing <websearch@163.com>
 // date: 2021-02-17
 
-// Package make documents for application.
+// 命令: 创建项目文档.
 package docs
 
 import (
@@ -19,7 +19,7 @@ func New() base.CommandInterface {
 	o := &command{}
 	o.Initialize()
 	o.SetName("docs")
-	o.SetDescription("Build application documents")
+	o.SetDescription("创建项目文档")
 	return o
 }
 

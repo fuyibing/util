@@ -1,6 +1,7 @@
 // author: wsfuyibing <websearch@163.com>
 // date: 2021-02-17
 
+// 命令: 帮助向导.
 package help
 
 import (
@@ -31,18 +32,17 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 		}
 	}
 	// Command list.
-	fmt.Printf("Application : %s/%s\n", manager.GetName(), manager.GetVersion())
-	fmt.Printf("Usage       : go run main.go COMMAND [OPTIONS]\n")
+	fmt.Printf("应用    : %s/%s\n", manager.GetName(), manager.GetVersion())
+	fmt.Printf("用法    : go run main.go <命令> [选项]\n")
 	i := 0
 	for _, c := range manager.GetCommands() {
 		if c.IsHidden() {
 			continue
 		}
-		i++
-		if i == 1 {
-			fmt.Printf("Commands %2d : %-34s %s\n", i, c.GetName(), c.GetDescription())
+		if i++; i == 1 {
+			fmt.Printf("命令 %2d : %-34s %s\n", i, c.GetName(), c.GetDescription())
 		} else {
-			fmt.Printf("         %2d : %-34s %s\n", i, c.GetName(), c.GetDescription())
+			fmt.Printf("     %2d : %-34s %s\n", i, c.GetName(), c.GetDescription())
 		}
 	}
 	return nil

@@ -1,0 +1,13 @@
+# config from consul
+# key: go/gofinance
+# file: ./config/logger.yaml.yaml
+# date: 2021-02-18 18:44:52.235107 +0800 CST m=+0.080839835
+adapter-name: "term"
+time-format: "2006-01-02 15:04:05.999"
+level-name: "ERROR"
+redis:
+  addr: "192.168.3.133"
+  password: "uniondrug@123"
+  index: 0
+  keyPrefix: "logger"
+  keyList: "list"

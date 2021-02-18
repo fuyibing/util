@@ -1,6 +1,7 @@
 // author: wsfuyibing <websearch@163.com>
 // date: 2021-02-17
 
+// 命令: 基础依赖.
 package base
 
 import (
@@ -15,7 +16,8 @@ type CommandInterface interface {
 	AddOption(...OptionInterface) CommandInterface
 	GetDescription() string
 	GetName() string
-	GetOption(string) (OptionInterface, bool)
+	GetOption(string) (OptionInterface, error)
+	Info(string, ...interface{})
 	Initialize() CommandInterface
 	IsHidden() bool
 	ParseArguments([]string) error
@@ -64,18 +66,18 @@ func (o *Command) GetName() string {
 }
 
 // Get option by name.
-func (o *Command) GetOption(name string) (OptionInterface, bool) {
+func (o *Command) GetOption(name string) (OptionInterface, error) {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	if opt, ok := o.options[name]; ok {
-		return opt, true
+		return opt, nil
 	}
-	return nil, false
+	return nil, errors.New(fmt.Sprintf("command %s: option `%s` not defined", o.name, name))
 }
 
-// Command is hidden.
-func (o *Command) IsHidden() bool {
-	return o.hidden
+// Print info.
+func (o *Command) Info(text string, args ...interface{}) {
+	println(fmt.Sprintf(text, args...))
 }
 
 // Initialize command fields.
@@ -83,6 +85,11 @@ func (o *Command) Initialize() CommandInterface {
 	o.mu = new(sync.RWMutex)
 	o.options = make(map[string]OptionInterface)
 	return o
+}
+
+// Command is hidden.
+func (o *Command) IsHidden() bool {
+	return o.hidden
 }
 
 // Parse arguments.
@@ -124,7 +131,7 @@ func (o *Command) ParseArguments(args []string) error {
 		}
 		// return error if required option not specified.
 		if opt.IsRequired() && !found {
-			return errors.New(fmt.Sprintf("%s: option %s not specified", o.name, opt.Name()))
+			return errors.New(fmt.Sprintf("command %s: option `--%s` not specified", o.name, opt.Name()))
 		}
 		// assign option value.
 		if found {
@@ -136,13 +143,12 @@ func (o *Command) ParseArguments(args []string) error {
 			value = ""
 		}
 	}
-
 	return nil
 }
 
 // Run command.
 func (o *Command) Run(manager ManagerInterface, args []string) error {
-	return errors.New(fmt.Sprintf("%s: Run() method not defined", o.name))
+	return errors.New(fmt.Sprintf("command %s: Run() method not defined", o.name))
 }
 
 // Set command description.
