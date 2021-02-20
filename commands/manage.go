@@ -1,75 +1,141 @@
 // author: wsfuyibing <websearch@163.com>
 // date: 2021-02-15
 
-// Package command line manager.
+// 命令: 命令管理器.
 package commands
 
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"sync"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/fuyibing/util/commands/base"
-	"github.com/fuyibing/util/commands/docs"
+	"github.com/fuyibing/util/commands/help"
+	"github.com/fuyibing/util/commands/kv"
 	"github.com/fuyibing/util/commands/makes"
 )
 
-// Command line manager interface.
-type ManagerInterface interface {
-	AddCommand(...base.CommandInterface) ManagerInterface
-	Run([]string) error
-}
+const (
+	DefaultCommandName    = "fyb"
+	DefaultCommandVersion = "0.0"
+)
 
-// 命令行管理器结构体.
+// Command line manager struct.
 type management struct {
-	mu       *sync.RWMutex
 	commands map[string]base.CommandInterface
+	mu       *sync.RWMutex
+	name     string
+	version  string
 }
 
-// 添加命令接口.
-func (o *management) AddCommand(cs ...base.CommandInterface) ManagerInterface {
+// Add command to manager.
+func (o *management) AddCommand(cs ...base.CommandInterface) base.ManagerInterface {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	for _, c := range cs {
-		o.commands[c.Name()] = c
+		o.commands[c.GetName()] = c
 	}
 	return o
 }
 
-// 运行命令行工具.
-func (o *management) Run(args []string) error {
-	// 1. 初始化入参.
+// Get added command.
+func (o *management) GetCommand(name string) base.CommandInterface {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+	if cmd, ok := o.commands[name]; ok {
+		return cmd
+	}
+	return nil
+}
+
+// Get added commands.
+func (o *management) GetCommands() map[string]base.CommandInterface {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+	return o.commands
+}
+
+// Get application name.
+func (o *management) GetName() string {
+	return o.name
+}
+
+// Get application version.
+func (o *management) GetVersion() string {
+	return o.version
+}
+
+// Run command manager.
+func (o *management) Run(args ...string) error {
+	// 1. initialize arguments.
 	if args == nil {
 		args = os.Args
 	}
-	// 2. 命令参数不少于2位.
+	// 2. arguments length less than 2 fields.
 	if args == nil || len(args) < 2 {
-		return errors.New(fmt.Sprintf("Command: name not specified"))
+		return errors.New(fmt.Sprintf("Command: command name not specified"))
 	}
-	// 3. 命令名称.
+	// 3. command name.
 	name := args[1]
-	// 3.1 今天已注册.
+	// 3.1 run added command.
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	if c, ok := o.commands[name]; ok {
-		return c.Run(args)
+		args[0] = "go run main.go"
+		return c.Run(o, args)
 	}
-	// 4. 返回未注册错误
-	return errors.New(fmt.Sprintf("Command: undefined command: %s", name))
+	// 4. return error if not added.
+	return errors.New(fmt.Sprintf("Command: command name not defined: %s", name))
 }
 
-// 创建默认命令行管理器实例.
-func Default() ManagerInterface {
+// Initialize manager instance.
+func (o *management) initialize() {
+	o.mu = new(sync.RWMutex)
+	o.commands = make(map[string]base.CommandInterface)
+	o.name = DefaultCommandName
+	o.version = DefaultCommandVersion
+	// parse yaml.
+	var tmp = &struct {
+		Name    string `yaml:"name"`
+		Version string `yaml:"version"`
+	}{}
+	for _, file := range []string{"./tmp/app.yaml", "../tmp/app.yaml", "../config/app.yaml"} {
+		bs, err := ioutil.ReadFile(file)
+		if err != nil {
+			continue
+		}
+		if err = yaml.Unmarshal(bs, tmp); err != nil {
+			continue
+		}
+		break
+	}
+	if tmp.Name != "" {
+		o.name = tmp.Name
+	}
+	if tmp.Version != "" {
+		o.version = tmp.Version
+	}
+}
+
+// Create default manager.
+func Default() base.ManagerInterface {
 	o := New()
-	o.AddCommand(makes.New(), docs.New())
+	o.AddCommand(
+		makes.New(),
+		// docs.New(),
+		kv.New(),
+		help.New(),
+	)
 	return o
 }
 
-// 创建命令行管理器实例.
-func New() ManagerInterface {
+// Create empty manager.
+func New() base.ManagerInterface {
 	o := &management{}
-	o.mu = new(sync.RWMutex)
-	o.commands = make(map[string]base.CommandInterface)
+	o.initialize()
 	return o
 }

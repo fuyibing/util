@@ -1,10 +1,7 @@
 // author: wsfuyibing <websearch@163.com>
 // date: 2021-02-17
 
-// Package make files for application.
-//
-// Dependent on iris framework, allow create model、
-// service、logic、controller.
+// 命令: 脚手架.
 package makes
 
 import (
@@ -15,30 +12,39 @@ type command struct {
 	base.Command
 }
 
-// Create MAKE command.
 func New() base.CommandInterface {
-	// create empty instance.
-	// initialize fields and set command name.
 	o := new(command)
 	o.Initialize()
 	o.SetName("make")
-	o.SetDescription("Build application files for iris framework.")
+	o.SetDescription("Create application file")
 	// 2. add option.
 	o.AddOption(
 		base.NewOption("type", base.OptionModeRequired, base.OptionValueModeString).
-			SetDescription("Specify your file type, accept: model|service|logic|controller"),
+			SetShortName("t").
+			SetDescription("Specify your file type (accept: model|service|logic|controller|path)"),
 		base.NewOption("name", base.OptionModeRequired, base.OptionValueModeString).
+			SetShortName("n").
 			SetDescription("Specify your file name"),
+		base.NewOption("table-name", base.OptionModeOptional, base.OptionValueModeString).
+			SetDescription("Specify table name for make model"),
+		base.NewOption("path", base.OptionModeOptional, base.OptionValueModeString).
+			SetShortName("p").
+			SetDefaultValue("./app").
+			SetDescription("Specify your root path (default: ./app)"),
 		base.NewOption("override", base.OptionModeOptional, base.OptionValueModeNone).
 			SetDescription("Override if file exists"),
+		base.NewOption("list", base.OptionModeOptional, base.OptionValueModeNone).
+			SetDescription("Print list"),
 	)
 	return o
 }
 
 // Parse arguments.
-func (o *command) Run(args []string) error {
+func (o *command) Run(manager base.ManagerInterface, args []string) error {
 	if err := o.ParseArguments(args); err != nil {
 		return err
 	}
-	return nil
+	mng := &management{args:args}
+	mng.initialize(o)
+	return mng.run()
 }

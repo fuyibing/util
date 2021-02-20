@@ -1,6 +1,7 @@
 // author: wsfuyibing <websearch@163.com>
 // date: 2021-02-17
 
+// 命令: 基础依赖.
 package base
 
 import (
@@ -13,19 +14,23 @@ import (
 // Command interface.
 type CommandInterface interface {
 	AddOption(...OptionInterface) CommandInterface
-	GetOption(string) (OptionInterface, bool)
+	GetDescription() string
+	GetName() string
+	GetOption(string) (OptionInterface, error)
+	Info(string, ...interface{})
 	Initialize() CommandInterface
-	Description() string
-	Name() string
+	IsHidden() bool
 	ParseArguments([]string) error
-	Run([]string) error
+	Run(ManagerInterface, []string) error
 	SetDescription(string) CommandInterface
+	SetHidden(bool) CommandInterface
 	SetName(string) CommandInterface
-	Usage()
+	Usage(ManagerInterface)
 }
 
 // Command struct.
 type Command struct {
+	hidden      bool
 	mu          *sync.RWMutex
 	name        string
 	description string
@@ -50,14 +55,29 @@ func (o *Command) AddOption(opts ...OptionInterface) CommandInterface {
 	return o
 }
 
+// Return command description.
+func (o *Command) GetDescription() string {
+	return o.description
+}
+
+// Return command name.
+func (o *Command) GetName() string {
+	return o.name
+}
+
 // Get option by name.
-func (o *Command) GetOption(name string) (OptionInterface, bool) {
+func (o *Command) GetOption(name string) (OptionInterface, error) {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	if opt, ok := o.options[name]; ok {
-		return opt, true
+		return opt, nil
 	}
-	return nil, false
+	return nil, errors.New(fmt.Sprintf("Command %s: option not defined: %s", o.name, name))
+}
+
+// Print info.
+func (o *Command) Info(text string, args ...interface{}) {
+	println(fmt.Sprintf(text, args...))
 }
 
 // Initialize command fields.
@@ -67,14 +87,9 @@ func (o *Command) Initialize() CommandInterface {
 	return o
 }
 
-// Return command description.
-func (o *Command) Description() string {
-	return o.description
-}
-
-// Return command name.
-func (o *Command) Name() string {
-	return o.name
+// Command is hidden.
+func (o *Command) IsHidden() bool {
+	return o.hidden
 }
 
 // Parse arguments.
@@ -116,7 +131,7 @@ func (o *Command) ParseArguments(args []string) error {
 		}
 		// return error if required option not specified.
 		if opt.IsRequired() && !found {
-			return errors.New(fmt.Sprintf("%s: option %s not specified", o.name, opt.Name()))
+			return errors.New(fmt.Sprintf("Command %s: option not specified: %s", o.name, opt.Name()))
 		}
 		// assign option value.
 		if found {
@@ -128,17 +143,23 @@ func (o *Command) ParseArguments(args []string) error {
 			value = ""
 		}
 	}
-
 	return nil
 }
 
 // Run command.
-func (o *Command) Run(args []string) error {
-	return errors.New(fmt.Sprintf("%s: Run() method not defined", o.name))
+func (o *Command) Run(manager ManagerInterface, args []string) error {
+	return errors.New(fmt.Sprintf("Command %s: Run() method override", o.name))
 }
 
+// Set command description.
 func (o *Command) SetDescription(description string) CommandInterface {
 	o.description = description
+	return o
+}
+
+// Set status hidden.
+func (o *Command) SetHidden(hidden bool) CommandInterface {
+	o.hidden = hidden
 	return o
 }
 
@@ -149,16 +170,21 @@ func (o *Command) SetName(name string) CommandInterface {
 }
 
 // Print usage.
-func (o *Command) Usage() {
+func (o *Command) Usage(manager ManagerInterface) {
 	// 1. print usage.
-	fmt.Printf("Usage: %s %s [OPTIOINS]\n", "go run main.go", o.name)
+	fmt.Printf("Application : %s/%s\n", manager.GetName(), manager.GetVersion())
+	fmt.Printf("Usage       : %s %s [OPTOINS]\n", "go run main.go", o.name)
 	// 2. print options
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	if len(o.options) > 0 {
-		fmt.Print("Options: \n")
+		i := 0
 		for _, c := range o.options {
-			c.Usage()
+			if i++; i == 1 {
+				c.Usage("Options     :")
+			} else {
+				c.Usage("            :")
+			}
 		}
 	}
 }
