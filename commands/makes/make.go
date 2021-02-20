@@ -73,7 +73,6 @@ func (o *management) initialize(cmd base.CommandInterface) {
 	var opt base.OptionInterface
 	o.Cmd = cmd
 	o.Imports = make([]string, 0)
-	o.Override = true
 	// 1. name
 	opt, _ = cmd.GetOption("name")
 	o.Name, _ = opt.ToString()
@@ -91,6 +90,9 @@ func (o *management) initialize(cmd base.CommandInterface) {
 	// 5. base directory
 	opt, _ = cmd.GetOption("path")
 	o.Dir, _ = opt.ToString()
+	// 6. override
+	opt, _ = cmd.GetOption("override")
+	o.Override, _ = opt.ToBool()
 }
 
 // List columns.

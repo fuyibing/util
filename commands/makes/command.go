@@ -31,7 +31,7 @@ func New() base.CommandInterface {
 			SetShortName("p").
 			SetDefaultValue("./app").
 			SetDescription("Specify your root path (default: ./app)"),
-		base.NewOption("Override", base.OptionModeOptional, base.OptionValueModeNone).
+		base.NewOption("override", base.OptionModeOptional, base.OptionValueModeNone).
 			SetDescription("Override if file exists"),
 		base.NewOption("list", base.OptionModeOptional, base.OptionValueModeNone).
 			SetDescription("Print list"),
