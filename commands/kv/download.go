@@ -90,8 +90,17 @@ func (o *downloadKv) readDepth() error {
 	return err
 }
 
-// Run api.
 func (o *downloadKv) run(key string) error {
+	for _, name := range strings.Split(key, ",") {
+		if err := o.runKey(name); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Run api.
+func (o *downloadKv) runKey(key string) error {
 	var err error
 	// 1. read base content.
 	if o.content, err = o.readContent(key); err != nil {

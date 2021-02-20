@@ -1,6 +1,7 @@
 # ignore directories
 .idea/
 app/
+config/
 tmp/
 
 # ignore files
