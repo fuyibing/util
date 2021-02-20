@@ -1,6 +1,0 @@
-# config from consul
-# key: go/gofinance
-# file: ./config/app.yaml.yaml
-# date: 2021-02-18 18:44:52.233676 +0800 CST m=+0.079409412
-name: "gs-finance"
-version: "0.1.2"

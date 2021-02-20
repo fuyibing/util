@@ -92,6 +92,8 @@ func (o *downloadKv) readDepth() error {
 
 func (o *downloadKv) run(key string) error {
 	for _, name := range strings.Split(key, ",") {
+		o.content = ""
+		o.files = make(map[string][]string)
 		if err := o.runKey(name); err != nil {
 			return err
 		}
@@ -140,7 +142,7 @@ func (o *downloadKv) write(key, name string, lines []string) (string, error) {
 	// header
 	s := "# config from consul"
 	s += fmt.Sprintf("\n# key: %s", key)
-	s += fmt.Sprintf("\n# file: %s.yaml", src)
+	s += fmt.Sprintf("\n# file: %s", src)
 	s += fmt.Sprintf("\n# date: %s", time.Now().String())
 	// content
 	for _, line := range lines {

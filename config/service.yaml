@@ -1,9 +1,0 @@
-# Config for service.
-# Database
-driver: "mysql"
-dsn:
-  - "root:pass@tcp(127.0.0.1:3306)/cn_uniondrug_module_mbs?charset=utf8"
-max-Idle: 30
-max-open: 30
-max-lifetime: 300
-mapper: "same"

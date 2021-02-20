@@ -7,6 +7,7 @@ package kv
 import (
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 
 	"github.com/hashicorp/consul/api"
@@ -92,6 +93,11 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 	if path, err = opt.ToString(); err != nil {
 		return err
 	}
+	if err = os.Mkdir(path, os.ModePerm); err != nil {
+		if os.IsNotExist(err) {
+			return errors.New(fmt.Sprintf("Command %s: create config path error: %v", o.GetName(), err))
+		}
+	}
 	// upload.
 	if ok {
 		return (&uploadKv{
@@ -105,6 +111,5 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 		cmd:   o,
 		cli:   cli,
 		path:  path,
-		files: make(map[string][]string),
 	}).run(name)
 }
