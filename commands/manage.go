@@ -14,7 +14,6 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/fuyibing/util/commands/base"
-	"github.com/fuyibing/util/commands/docs"
 	"github.com/fuyibing/util/commands/help"
 	"github.com/fuyibing/util/commands/kv"
 	"github.com/fuyibing/util/commands/makes"
@@ -86,6 +85,7 @@ func (o *management) Run(args ...string) error {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	if c, ok := o.commands[name]; ok {
+		args[0] = "go run main.go"
 		return c.Run(o, args)
 	}
 	// 4. return error if not added.
@@ -124,7 +124,12 @@ func (o *management) initialize() {
 // Create default manager.
 func Default() base.ManagerInterface {
 	o := New()
-	o.AddCommand(makes.New(), docs.New(), kv.New(), help.New())
+	o.AddCommand(
+		makes.New(),
+		// docs.New(),
+		kv.New(),
+		help.New(),
+	)
 	return o
 }
 

@@ -5,9 +5,6 @@
 package makes
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/fuyibing/util/commands/base"
 )
 
@@ -15,10 +12,7 @@ type command struct {
 	base.Command
 }
 
-// Create MAKE command.
 func New() base.CommandInterface {
-	// create empty instance.
-	// initialize fields and set command name.
 	o := new(command)
 	o.Initialize()
 	o.SetName("make")
@@ -26,11 +20,21 @@ func New() base.CommandInterface {
 	// 2. add option.
 	o.AddOption(
 		base.NewOption("type", base.OptionModeRequired, base.OptionValueModeString).
-			SetDescription("Specify your file type, accept: model|service|logic|controller"),
+			SetShortName("t").
+			SetDescription("Specify your file type (accept: model|service|logic|controller|path)"),
 		base.NewOption("name", base.OptionModeRequired, base.OptionValueModeString).
+			SetShortName("n").
 			SetDescription("Specify your file name"),
-		base.NewOption("override", base.OptionModeOptional, base.OptionValueModeNone).
+		base.NewOption("table-name", base.OptionModeOptional, base.OptionValueModeString).
+			SetDescription("Specify table name for make model"),
+		base.NewOption("path", base.OptionModeOptional, base.OptionValueModeString).
+			SetShortName("p").
+			SetDefaultValue("./app").
+			SetDescription("Specify your root path (default: ./app)"),
+		base.NewOption("Override", base.OptionModeOptional, base.OptionValueModeNone).
 			SetDescription("Override if file exists"),
+		base.NewOption("list", base.OptionModeOptional, base.OptionValueModeNone).
+			SetDescription("Print list"),
 	)
 	return o
 }
@@ -40,5 +44,7 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 	if err := o.ParseArguments(args); err != nil {
 		return err
 	}
-	return errors.New(fmt.Sprintf("Command %s: TODO", o.GetName()))
+	mng := &management{args:args}
+	mng.initialize(o)
+	return mng.run()
 }

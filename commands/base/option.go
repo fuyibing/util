@@ -205,8 +205,12 @@ func (o *option) ToString() (string, error) {
 	} else if o.defaultValue != nil {
 		v = o.defaultValue
 	} else {
-		return "",
-			errors.New(fmt.Sprintf("Option %s: string value not specified", o.name))
+		if o.IsRequired() {
+			return "",
+				errors.New(fmt.Sprintf("Option %s: string value not specified", o.name))
+		} else {
+			return "", nil
+		}
 	}
 	return fmt.Sprintf("%v", v), nil
 }
