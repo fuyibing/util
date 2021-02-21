@@ -39,7 +39,7 @@ func main() {
 go run main.go make --type=path --name=sketch
 ```
 
-### 4. 下载配置文件
+### 4. 下载配置模板
 
 > 从模板中下载项目配置文件, 选项`--name`指定模板名称, 多个模板使用逗号`,`分隔开。
 
@@ -47,7 +47,7 @@ go run main.go make --type=path --name=sketch
 go run main.go kv \
   --path=./config \
   --addr=udsdk.turboradio.cn \
-  --name=go/app,go/db,go/log
+  --name=go/app,go/db,go/log,go/lock
 ```
 
 

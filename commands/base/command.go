@@ -23,6 +23,7 @@ type CommandInterface interface {
 	ParseArguments([]string) error
 	Run(ManagerInterface, []string) error
 	SetDescription(string) CommandInterface
+	SetHandler(handle func(ManagerInterface, []string) error) CommandInterface
 	SetHidden(bool) CommandInterface
 	SetName(string) CommandInterface
 	Usage(ManagerInterface)
@@ -30,6 +31,7 @@ type CommandInterface interface {
 
 // Command struct.
 type Command struct {
+	handler     func(ManagerInterface, []string) error
 	hidden      bool
 	mu          *sync.RWMutex
 	name        string
@@ -148,12 +150,21 @@ func (o *Command) ParseArguments(args []string) error {
 
 // Run command.
 func (o *Command) Run(manager ManagerInterface, args []string) error {
+	if o.handler != nil {
+		return o.handler(manager, args)
+	}
 	return errors.New(fmt.Sprintf("Command %s: Run() method override", o.name))
 }
 
 // Set command description.
 func (o *Command) SetDescription(description string) CommandInterface {
 	o.description = description
+	return o
+}
+
+// Set handler.
+func (o *Command) SetHandler(handler func(ManagerInterface, []string) error) CommandInterface {
+	o.handler = handler
 	return o
 }
 
