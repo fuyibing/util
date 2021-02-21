@@ -36,6 +36,8 @@ func New() base.CommandInterface {
 		base.NewOption("name", base.OptionModeRequired, base.OptionValueModeString).SetShortName("n").SetDescription("Consul key name, eg: app/config"),
 		base.NewOption("path", base.OptionModeOptional, base.OptionValueModeString).SetShortName("p").SetDefaultValue("./tmp").SetDescription("Config file directory name (default: ./tmp)"),
 		base.NewOption("scheme", base.OptionModeOptional, base.OptionValueModeString).SetShortName("s").SetDefaultValue("http").SetDescription("Consul scheme (accept: http|https, default: http)"),
+		base.NewOption("origin", base.OptionModeOptional, base.OptionValueModeNone).SetDescription("Download origin when kv recycled"),
+		base.NewOption("override", base.OptionModeOptional, base.OptionValueModeNone).SetDescription("Override if file exist"),
 		base.NewOption("upload", base.OptionModeOptional, base.OptionValueModeNone).SetShortName("u").SetDescription("Upload local config files data to remote"),
 	)
 	return o
@@ -108,8 +110,8 @@ func (o *command) Run(manager base.ManagerInterface, args []string) error {
 	}
 	// download.
 	return (&downloadKv{
-		cmd:   o,
-		cli:   cli,
-		path:  path,
+		cmd:  o,
+		cli:  cli,
+		path: path,
 	}).run(name)
 }

@@ -19,13 +19,15 @@ go mod init sketch
 package main
 
 import (
+	"fmt"
+
 	"github.com/fuyibing/util/commands"
 )
 
 func main() {
 	cmd := commands.Default()
 	if err := cmd.Run(); err != nil {
-		println(err.Error())
+		fmt.Printf("%c[%d;%d;%dm%s%c[0m\n", 0x1B, 0, 33, 41, err.Error(), 0x1B)
 		return
 	}
 }
@@ -45,7 +47,7 @@ go run main.go make --type=path --name=sketch
 go run main.go kv \
   --path=./config \
   --addr=udsdk.turboradio.cn \
-  --name=go/app,go/service,go/logger,go/redis
+  --name=go/app,go/db,go/log
 ```
 
 
