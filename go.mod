@@ -1,10 +1,10 @@
 module github.com/fuyibing/util
 
-go 1.15
+go 1.13
 
 require (
 	github.com/armon/go-metrics v0.3.6 // indirect
-	github.com/fuyibing/db v1.0.0
+	github.com/fuyibing/db v1.0.1
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect

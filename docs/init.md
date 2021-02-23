@@ -50,6 +50,8 @@ go run main.go kv \
   --name=go/app,go/db,go/log,go/lock
 ```
 
+### 5. 上传配置
+
 
 
 
