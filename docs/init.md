@@ -19,13 +19,15 @@ go mod init sketch
 package main
 
 import (
+	"fmt"
+
 	"github.com/fuyibing/util/commands"
 )
 
 func main() {
 	cmd := commands.Default()
 	if err := cmd.Run(); err != nil {
-		println(err.Error())
+		fmt.Printf("%c[%d;%d;%dm%s%c[0m\n", 0x1B, 0, 33, 41, err.Error(), 0x1B)
 		return
 	}
 }
@@ -37,7 +39,7 @@ func main() {
 go run main.go make --type=path --name=sketch
 ```
 
-### 4. 下载配置文件
+### 4. 下载配置模板
 
 > 从模板中下载项目配置文件, 选项`--name`指定模板名称, 多个模板使用逗号`,`分隔开。
 
@@ -45,8 +47,10 @@ go run main.go make --type=path --name=sketch
 go run main.go kv \
   --path=./config \
   --addr=udsdk.turboradio.cn \
-  --name=go/app,go/service,go/logger,go/redis
+  --name=go/framework,go/db,go/log,go/lock
 ```
+
+### 5. 上传配置
 
 
 

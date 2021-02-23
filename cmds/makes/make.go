@@ -13,7 +13,7 @@ import (
 
 	"github.com/fuyibing/db"
 
-	"github.com/fuyibing/util/commands/base"
+	"github.com/fuyibing/util/cmds/base"
 )
 
 var (
@@ -238,7 +238,7 @@ func (o *management) renderStructServiceGetById() string {
 	name := o.toExportName(o.Name)
 	for _, bean := range beans {
 		if bean.Key == "PRI" {
-			o.Imports = append(o.Imports, "mod/app/models")
+			o.Imports = append(o.Imports, "mod/framework/models")
 			str := fmt.Sprintf("// Get %s by primary key.\n", name)
 			str += fmt.Sprintf("func (o *%sService) GetById(id %s) (*models.%s, error) {\n", name, o.toType(bean.Type), name)
 			str += fmt.Sprintf("    bean := &models.%s{}\n", name)
@@ -310,7 +310,7 @@ func (o *management) runPath() error {
 	}
 
 	// Loop path.
-	for _, name := range []string{"commands", "controllers", "logics", "middlewares", "models", "services"} {
+	for _, name := range []string{"cmds", "controllers", "logics", "middlewares", "models", "services"} {
 		dir := fmt.Sprintf("%s/%s", path, name)
 		// create directory.
 		if err = os.MkdirAll(dir, os.ModePerm); err != nil {

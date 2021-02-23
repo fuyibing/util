@@ -2,7 +2,7 @@
 // date: 2021-02-15
 
 // 命令: 命令管理器.
-package commands
+package cmds
 
 import (
 	"errors"
@@ -13,10 +13,10 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/fuyibing/util/commands/base"
-	"github.com/fuyibing/util/commands/help"
-	"github.com/fuyibing/util/commands/kv"
-	"github.com/fuyibing/util/commands/makes"
+	"github.com/fuyibing/util/cmds/base"
+	"github.com/fuyibing/util/cmds/help"
+	"github.com/fuyibing/util/cmds/kv"
+	"github.com/fuyibing/util/cmds/makes"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 	DefaultCommandVersion = "0.0"
 )
 
-// Command line manager struct.
+// 管理器结构体.
 type management struct {
 	commands map[string]base.CommandInterface
 	mu       *sync.RWMutex
@@ -32,7 +32,7 @@ type management struct {
 	version  string
 }
 
-// Add command to manager.
+// 添加命令.
 func (o *management) AddCommand(cs ...base.CommandInterface) base.ManagerInterface {
 	o.mu.Lock()
 	defer o.mu.Unlock()
@@ -42,7 +42,7 @@ func (o *management) AddCommand(cs ...base.CommandInterface) base.ManagerInterfa
 	return o
 }
 
-// Get added command.
+// 读取命令.
 func (o *management) GetCommand(name string) base.CommandInterface {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
@@ -52,24 +52,20 @@ func (o *management) GetCommand(name string) base.CommandInterface {
 	return nil
 }
 
-// Get added commands.
+// 读取命令列表.
 func (o *management) GetCommands() map[string]base.CommandInterface {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	return o.commands
 }
 
-// Get application name.
-func (o *management) GetName() string {
-	return o.name
-}
+// 读取项目名称.
+func (o *management) GetName() string { return o.name }
 
-// Get application version.
-func (o *management) GetVersion() string {
-	return o.version
-}
+// 读取项目版本号.
+func (o *management) GetVersion() string { return o.version }
 
-// Run command manager.
+// 运行指定命令.
 func (o *management) Run(args ...string) error {
 	// 1. initialize arguments.
 	if args == nil {
@@ -92,7 +88,7 @@ func (o *management) Run(args ...string) error {
 	return errors.New(fmt.Sprintf("Command: command name not defined: %s", name))
 }
 
-// Initialize manager instance.
+// 初始化配置参数.
 func (o *management) initialize() {
 	o.mu = new(sync.RWMutex)
 	o.commands = make(map[string]base.CommandInterface)
@@ -103,7 +99,7 @@ func (o *management) initialize() {
 		Name    string `yaml:"name"`
 		Version string `yaml:"version"`
 	}{}
-	for _, file := range []string{"./tmp/app.yaml", "../tmp/app.yaml", "../config/app.yaml"} {
+	for _, file := range []string{"./tmp/framework.yaml", "../tmp/framework.yaml", "./config/framework.yaml", "../config/framework.yaml"} {
 		bs, err := ioutil.ReadFile(file)
 		if err != nil {
 			continue
@@ -121,19 +117,18 @@ func (o *management) initialize() {
 	}
 }
 
-// Create default manager.
+// 创建默认管理器.
 func Default() base.ManagerInterface {
 	o := New()
 	o.AddCommand(
 		makes.New(),
-		// docs.New(),
 		kv.New(),
 		help.New(),
 	)
 	return o
 }
 
-// Create empty manager.
+// 创建管理器.
 func New() base.ManagerInterface {
 	o := &management{}
 	o.initialize()

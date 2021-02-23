@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/fuyibing/util/commands/base"
+	"github.com/fuyibing/util/cmds/base"
 )
 
 type command struct {
@@ -24,8 +24,8 @@ func New() base.CommandInterface {
 	o.AddOption(
 		base.NewOption("path", base.OptionModeOptional, base.OptionValueModeString).
 			SetShortName("p").
-			SetDefaultValue("./app").
-			SetDescription("Source file directory (default: ./app)"),
+			SetDefaultValue("./framework").
+			SetDescription("Source file directory (default: ./framework)"),
 		base.NewOption("target", base.OptionModeOptional, base.OptionValueModeString).
 			SetShortName("t").
 			SetDefaultValue("./docs").

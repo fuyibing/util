@@ -1,10 +1,10 @@
 module github.com/fuyibing/util
 
-go 1.15
+go 1.13
 
 require (
 	github.com/armon/go-metrics v0.3.6 // indirect
-	github.com/fuyibing/db v0.0.0-20210213155925-37c2fb69a438
+	github.com/fuyibing/db v1.0.1
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
@@ -21,4 +21,5 @@ require (
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	xorm.io/xorm v1.0.7
 )

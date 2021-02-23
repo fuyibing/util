@@ -12,16 +12,18 @@ import (
 
 	"github.com/hashicorp/consul/api"
 
-	"github.com/fuyibing/util/commands/base"
+	"github.com/fuyibing/util/cmds/base"
 )
 
 // Download KV from consul.
 type downloadKv struct {
-	cmd     base.CommandInterface
-	path    string
-	cli     *api.Client
-	files   map[string][]string
-	content string
+	cmd      base.CommandInterface
+	path     string
+	cli      *api.Client
+	files    map[string][]string
+	origin   bool
+	override bool
+	content  string
 }
 
 // Parse content.
@@ -91,6 +93,14 @@ func (o *downloadKv) readDepth() error {
 }
 
 func (o *downloadKv) run(key string) error {
+	var opt base.OptionInterface
+	// download origin.
+	opt, _ = o.cmd.GetOption("origin")
+	o.origin, _ = opt.ToBool()
+	// override if file exist
+	opt, _ = o.cmd.GetOption("override")
+	o.override, _ = opt.ToBool()
+	// loop file.
 	for _, name := range strings.Split(key, ",") {
 		o.content = ""
 		o.files = make(map[string][]string)
@@ -109,8 +119,10 @@ func (o *downloadKv) runKey(key string) error {
 		return err
 	}
 	// 2. depth replace.
-	if err = o.readDepth(); err != nil {
-		return err
+	if !o.origin {
+		if err = o.readDepth(); err != nil {
+			return err
+		}
 	}
 	// 3. parse content to file.
 	if err = o.parseContent(); err != nil {
@@ -131,6 +143,13 @@ func (o *downloadKv) write(key, name string, lines []string) (string, error) {
 	var err error
 	var f *os.File
 	var src = fmt.Sprintf("%s/%s.yaml", o.path, name)
+	// check override able if file exists
+	if !o.override {
+		if f, err = os.OpenFile(src, os.O_RDONLY, os.ModePerm); err == nil {
+			_ = f.Close()
+			return "", errors.New(fmt.Sprintf("Command %s: file exist: %s", o.cmd.GetName(), name))
+		}
+	}
 	// open and close if end.
 	f, err = os.OpenFile(src, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
