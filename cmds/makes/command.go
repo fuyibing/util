@@ -5,7 +5,7 @@
 package makes
 
 import (
-	"github.com/fuyibing/util/commands/base"
+	"github.com/fuyibing/util/cmds/base"
 )
 
 type command struct {
@@ -29,8 +29,8 @@ func New() base.CommandInterface {
 			SetDescription("Specify table name for make model"),
 		base.NewOption("path", base.OptionModeOptional, base.OptionValueModeString).
 			SetShortName("p").
-			SetDefaultValue("./app").
-			SetDescription("Specify your root path (default: ./app)"),
+			SetDefaultValue("./framework").
+			SetDescription("Specify your root path (default: ./framework)"),
 		base.NewOption("override", base.OptionModeOptional, base.OptionValueModeNone).
 			SetDescription("Override if file exists"),
 		base.NewOption("list", base.OptionModeOptional, base.OptionValueModeNone).

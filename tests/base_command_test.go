@@ -6,8 +6,8 @@ package tests
 import (
 	"testing"
 
-	"github.com/fuyibing/util/commands/base"
-	"github.com/fuyibing/util/commands/makes"
+	"github.com/fuyibing/util/cmds/base"
+	"github.com/fuyibing/util/cmds/makes"
 )
 
 func TestBaseCommandMakes(t *testing.T) {
@@ -39,7 +39,7 @@ func TestBaseCommandMakes(t *testing.T) {
 func TestBaseCommandConsul(t *testing.T) {
 	c := base.NewCommand("kv")
 	c.AddOption(
-		base.NewOption("app", base.OptionModeRequired, base.OptionValueModeString).
+		base.NewOption("framework", base.OptionModeRequired, base.OptionValueModeString).
 			SetShortName("a").
 			SetDescription("Specify your application name"),
 		base.NewOption("consul", base.OptionModeRequired, base.OptionValueModeString).
@@ -52,13 +52,13 @@ func TestBaseCommandConsul(t *testing.T) {
 // import (
 // 	"testing"
 //
-// 	"github.com/fuyibing/util/commands/base2"
-// 	"github.com/fuyibing/util/commands/makes"
+// 	"github.com/fuyibing/util/cmds/base2"
+// 	"github.com/fuyibing/util/cmds/makes"
 // )
 //
 // func TestCommandManager(t *testing.T) {
 // 	ok, err := base2.Manager.AddCommand(makes.New()).Run(
-// 		"app",
+// 		"framework",
 // 		"make",
 // 		"-t",
 // 		"model",
@@ -91,7 +91,7 @@ func TestBaseCommandConsul(t *testing.T) {
 // // import (
 // // 	"testing"
 // //
-// // 	"github.com/fuyibing/util/commands/base2"
+// // 	"github.com/fuyibing/util/cmds/base2"
 // // )
 // //
 // // type MyCommand struct {

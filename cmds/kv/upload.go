@@ -13,7 +13,7 @@ import (
 
 	"github.com/hashicorp/consul/api"
 
-	"github.com/fuyibing/util/commands/base"
+	"github.com/fuyibing/util/cmds/base"
 )
 
 // Upload KV to consul.

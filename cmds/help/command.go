@@ -7,7 +7,7 @@ package help
 import (
 	"fmt"
 
-	"github.com/fuyibing/util/commands/base"
+	"github.com/fuyibing/util/cmds/base"
 )
 
 type command struct {

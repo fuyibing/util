@@ -6,7 +6,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/fuyibing/util/commands/base"
+	"github.com/fuyibing/util/cmds/base"
 )
 
 func TestBaseOption(t *testing.T) {

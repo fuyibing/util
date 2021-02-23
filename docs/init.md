@@ -47,7 +47,7 @@ go run main.go make --type=path --name=sketch
 go run main.go kv \
   --path=./config \
   --addr=udsdk.turboradio.cn \
-  --name=go/app,go/db,go/log,go/lock
+  --name=go/framework,go/db,go/log,go/lock
 ```
 
 ### 5. 上传配置

@@ -2,7 +2,7 @@
 // date: 2021-02-15
 
 // 命令: 命令管理器.
-package commands
+package cmds
 
 import (
 	"errors"
@@ -13,10 +13,10 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/fuyibing/util/commands/base"
-	"github.com/fuyibing/util/commands/help"
-	"github.com/fuyibing/util/commands/kv"
-	"github.com/fuyibing/util/commands/makes"
+	"github.com/fuyibing/util/cmds/base"
+	"github.com/fuyibing/util/cmds/help"
+	"github.com/fuyibing/util/cmds/kv"
+	"github.com/fuyibing/util/cmds/makes"
 )
 
 const (
@@ -99,7 +99,7 @@ func (o *management) initialize() {
 		Name    string `yaml:"name"`
 		Version string `yaml:"version"`
 	}{}
-	for _, file := range []string{"./tmp/app.yaml", "../tmp/app.yaml", "./config/app.yaml", "../config/app.yaml"} {
+	for _, file := range []string{"./tmp/framework.yaml", "../tmp/framework.yaml", "./config/framework.yaml", "../config/framework.yaml"} {
 		bs, err := ioutil.ReadFile(file)
 		if err != nil {
 			continue

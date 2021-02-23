@@ -6,7 +6,7 @@ package tests
 // import (
 // 	"testing"
 //
-// 	"github.com/fuyibing/util/commands/base2"
+// 	"github.com/fuyibing/util/cmds/base2"
 // )
 //
 // var ds map[string]base2.DefinitionInterface
