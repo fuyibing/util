@@ -46,21 +46,21 @@ func TryCatch() Catchable {
 }
 
 // Before
-// register skip-doCaller.
+// register skip-caller.
 func (o *catchable) Before(cs ...SkipCaller) Catchable {
     o.beforeCallers = append(o.beforeCallers, cs...)
     return o
 }
 
 // Catch
-// register catch-doCaller.
+// register catch-caller.
 func (o *catchable) Catch(cs ...CatchCaller) Catchable {
     o.catchCallers = append(o.catchCallers, cs...)
     return o
 }
 
 // Finally
-// register finally-doCaller.
+// register finally-caller.
 func (o *catchable) Finally(cs ...FinallyCaller) Catchable {
     o.finallyCallers = append(o.finallyCallers, cs...)
     return o
@@ -73,7 +73,7 @@ func (o *catchable) Identify() (id, acquires uint64) {
 }
 
 // Logger
-// register panic doCaller.
+// register panic caller.
 func (o *catchable) Logger(c PanicCaller) Catchable {
     o.panicCaller = c
     return o
@@ -87,7 +87,7 @@ func (o *catchable) Run(ctx context.Context) error {
 }
 
 // Try
-// register try-doCaller.
+// register try-caller.
 func (o *catchable) Try(cs ...TryCaller) Catchable {
     o.tryCallers = append(o.tryCallers, cs...)
     return o
@@ -132,19 +132,19 @@ func (o *catchable) run(ctx context.Context) (err error) {
     // when progress end.
     defer o.after()
 
-    // Try/Cache before doCaller.
+    // Try/Cache before caller.
     skip := false
     if skip, err = o.runBefore(ctx); skip {
         return
     }
 
-    // Run try doCaller of try/catch.
+    // Run try caller of try/catch.
     if err = o.runTry(ctx); err != nil {
-        // Run catch doCaller of try/catch.
+        // Run catch caller of try/catch.
         o.runCatch(ctx, err)
     }
 
-    // Run finally doCaller of try/catch.
+    // Run finally caller of try/catch.
     o.runFinally(ctx)
     return
 }
@@ -165,7 +165,7 @@ func (o *catchable) runBefore(ctx context.Context) (skip bool, err error) {
     }()
 
     // Run skip-callers
-    // and break if true returned in any doCaller.
+    // and break if true returned in any caller.
     for _, caller := range o.beforeCallers {
         if skip = caller(ctx); skip {
             break
@@ -187,7 +187,7 @@ func (o *catchable) runCatch(ctx context.Context, v error) {
     }()
 
     // Run catch-callers
-    // and break if true returned in any doCaller.
+    // and break if true returned in any caller.
     for _, caller := range o.catchCallers {
         if caller(ctx, v) {
             break
@@ -208,7 +208,7 @@ func (o *catchable) runFinally(ctx context.Context) {
     }()
 
     // Run finally-callers
-    // and break if true returned in any doCaller.
+    // and break if true returned in any caller.
     for _, caller := range o.finallyCallers {
         if caller(ctx) {
             break
@@ -232,7 +232,7 @@ func (o *catchable) runTry(ctx context.Context) (err error) {
     }()
 
     // Run try-callers
-    // and break if true returned in any doCaller.
+    // and break if true returned in any caller.
     for _, caller := range o.tryCallers {
         if caller(ctx) {
             break

@@ -13,16 +13,46 @@ type (
     // Processor
     // interface for process manager.
     Processor interface {
+        // After
+        // register as after-caller which called
+        // when processor end.
         After(cs ...SkipCaller) Processor
+
+        // Before
+        // register as before-caller which called
+        // when processor begin.
         Before(cs ...SkipCaller) Processor
+
+        // Callee
+        // register as progress-caller which called
+        // when processor running.
         Callee(cs ...SkipCaller) Processor
 
+        // Healthy
+        // return process health status. Process is running
+        // and context cancelled signal never received.
         Healthy() bool
+
+        // Panic
+        // register caller which called when panic occurred in
+        // any callback.
         Panic(cp PanicCaller) Processor
+
+        // Restart
+        // processor.
         Restart()
+
+        // Running
+        // return processor status. It means processor is running
+        // or stopping.
         Running() bool
 
+        // Start
+        // processor.
         Start(ctx context.Context) error
+
+        // Stop
+        // processor.
         Stop()
     }
 
