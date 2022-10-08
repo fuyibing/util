@@ -1,6 +1,8 @@
 // author: wsfuyibing <websearch@163.com>
 // date: 2020-01-01
 
+// Package util
+// 常用工具.
 package util
 
 import (
@@ -20,6 +22,63 @@ type (
     // 捕获异常操作接口.
     //
     // 模拟 Try/Catch 代码块, 在此调用中使用注册回调的方式运行.
+    //
+    // [GO]
+    //
+    //   TryCatch().Panic(
+    //       func(ctx context.Context, v interface{}){
+    //           println("panic found")
+    //       },
+    //   ).Before(
+    //       func(ctx context.Context) (skipped bool){
+    //           println("before 1")
+    //           return
+    //       },
+    //       func(ctx context.Context) (skipped bool){
+    //           println("before 2")
+    //           return
+    //       },
+    //   ).Try(
+    //       func(ctx context.Context) (skipped bool){
+    //           println("try 1")
+    //           return
+    //       },
+    //       func(ctx context.Context) (skipped bool){
+    //           println("try 2")
+    //           return
+    //       },
+    //   ).Catch(
+    //       func(ctx context.Context, e error) (skipped bool){
+    //           println("catch 1")
+    //           return
+    //       },
+    //       func(ctx context.Context, e error) (skipped bool){
+    //           println("catch 2")
+    //           return
+    //       },
+    //   ).Finally(
+    //      func(ctx context.Context) (skipped bool){
+    //           println("finally 1")
+    //           return
+    //      },
+    //      func(ctx context.Context) (skipped bool){
+    //           println("finally 2")
+    //           return
+    //      },
+    //   ).Run(ctx)
+    //
+    // [PHP]
+    //
+    //   <?php
+    //
+    //   try{
+    //       // ...
+    //   } catch(Throwable $e){
+    //       // ...
+    //   } finally {
+    //       // ...
+    //   }
+    //
     Catchable interface {
         // Before
         // 注册前置回调.
