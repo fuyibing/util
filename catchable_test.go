@@ -1,5 +1,5 @@
 // author: wsfuyibing <websearch@163.com>
-// date: 2022-10-02
+// date: 2020-01-01
 
 package util
 
@@ -49,7 +49,7 @@ func TestCatchable(t *testing.T) {
             t.Logf("finally-2")
             return
         },
-    ).Logger(
+    ).Panic(
         func(ctx context.Context, v interface{}) {
             t.Logf("panic: %v", v)
         },
