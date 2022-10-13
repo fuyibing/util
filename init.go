@@ -7,10 +7,5 @@ import "sync"
 
 func init() {
 	new(sync.Once).Do(func() {
-		// catchablePool = sync.Pool{
-		//     New: func() interface{} {
-		//         return (&catchable{}).init()
-		//     },
-		// }
 	})
 }
