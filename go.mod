@@ -1,3 +1,3 @@
-module github.com/fuyibing/util
+module github.com/fuyibing/util/v2
 
 go 1.13
