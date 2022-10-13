@@ -22,20 +22,20 @@ type (
         // 注册后置回调.
         //
         // 执行器退出前触发, 至少执行 1 次.
-        After(cs ...SkipCaller) Processor
+        After(cs ...Ignore) Processor
 
         // Before
         // 注册前置回调.
         //
         // 启动执行器前触发, 至少执行 1 次.
-        Before(cs ...SkipCaller) Processor
+        Before(cs ...Ignore) Processor
 
         // Callee
         // 注册过程回调.
         //
         // 执行器主体执行过程, 执行 0-n 次, 若通过 Before() 注册的回调返回了忽略(Skipped)则
         // 不执行(执行0次), 首次启动或每次重启时各执行 1 次.
-        Callee(cs ...SkipCaller) Processor
+        Callee(cs ...Ignore) Processor
 
         // Healthy
         // 健康状态检查.
@@ -47,7 +47,7 @@ type (
         // 注册异常回调.
         //
         // 执行过程中, 每次出现 panic, 此回调触发1次.
-        Panic(cp PanicCaller) Processor
+        Panic(cp Panic) Processor
 
         // Restart
         // 重启执行器.
@@ -75,8 +75,8 @@ type (
         name             string
         running, restart bool
 
-        ca, cb, cc []SkipCaller
-        cp         PanicCaller
+        ca, cb, cc []Ignore
+        cp         Panic
     }
 )
 
@@ -86,21 +86,21 @@ func NewProcessor(name string) Processor {
 
 // After
 // 注册后置回调.
-func (o *processor) After(cs ...SkipCaller) Processor {
+func (o *processor) After(cs ...Ignore) Processor {
     o.ca = append(o.ca, cs...)
     return o
 }
 
 // Before
 // 注册前置回调.
-func (o *processor) Before(cs ...SkipCaller) Processor {
+func (o *processor) Before(cs ...Ignore) Processor {
     o.cb = append(o.cb, cs...)
     return o
 }
 
 // Callee
 // 注册过程回调.
-func (o *processor) Callee(cs ...SkipCaller) Processor {
+func (o *processor) Callee(cs ...Ignore) Processor {
     o.cc = append(o.cc, cs...)
     return o
 }
@@ -115,7 +115,7 @@ func (o *processor) Healthy() bool {
 
 // Panic
 // 注册异常回调.
-func (o *processor) Panic(cp PanicCaller) Processor {
+func (o *processor) Panic(cp Panic) Processor {
     o.cp = cp
     return o
 }
@@ -185,9 +185,9 @@ func (o *processor) Stop() {
 
 func (o *processor) init() *processor {
     o.mu = sync.RWMutex{}
-    o.ca = make([]SkipCaller, 0)
-    o.cb = make([]SkipCaller, 0)
-    o.cc = make([]SkipCaller, 0)
+    o.ca = make([]Ignore, 0)
+    o.cb = make([]Ignore, 0)
+    o.cc = make([]Ignore, 0)
     return o
 }
 
