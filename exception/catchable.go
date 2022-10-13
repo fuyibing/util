@@ -67,8 +67,6 @@ type (
 
 // New
 // 创建实例.
-//
-// 创建实例时从池中获取.
 func New() Catchable {
 	return catchablePool.
 		Get().(*catchable).

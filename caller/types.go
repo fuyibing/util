@@ -25,6 +25,14 @@ type (
 	PanicCaller func(ctx context.Context, v interface{})
 )
 
+type (
+	// ProcessCaller
+	// 进程回调.
+	//
+	// 参数 ctx 为进程的上下文, 为启动前上下文的子上下文.
+	ProcessCaller func(ctx context.Context)
+)
+
 // /////////////////////////////////////////////////////////////
 // Try/Catch block
 // /////////////////////////////////////////////////////////////
