@@ -21,19 +21,19 @@ type (
 	Catchable interface {
 		// Catch
 		// 注册捕获回调.
-		Catch(cs ...Catch) Catchable
+		Catch(cs ...FuncCatch) Catchable
 
 		// Finally
 		// 注册最终回调.
-		Finally(cs ...Finally) Catchable
+		Finally(cs ...FuncFinally) Catchable
 
 		// Ignore
 		// 注册忽略回调.
-		Ignore(ci ...Ignore) Catchable
+		Ignore(ci ...FuncIgnore) Catchable
 
 		// Panic
 		// 注册异常回调.
-		Panic(cp Panic) Catchable
+		Panic(cp FuncPanic) Catchable
 
 		// Run
 		// 执行实例.
@@ -41,17 +41,17 @@ type (
 
 		// Try
 		// 注册尝试回调.
-		Try(cs ...Try) Catchable
+		Try(cs ...FuncTry) Catchable
 	}
 
 	catchable struct {
 		acquires, id uint64
 
-		cc []Catch   // 可捕获回调列表
-		cf []Finally // 可最终回调列表
-		ci []Ignore  // 可忽略回调列表
-		cp Panic     // 运行异常回调
-		ct []Try     // 可尝试回调列表
+		cc []FuncCatch   // 可捕获回调列表
+		cf []FuncFinally // 可最终回调列表
+		ci []FuncIgnore  // 可忽略回调列表
+		cp FuncPanic     // 运行异常回调
+		ct []FuncTry     // 可尝试回调列表
 	}
 )
 
@@ -67,35 +67,35 @@ func New() Catchable {
 
 // Catch
 // 注册捕获回调.
-func (o *catchable) Catch(cs ...Catch) Catchable {
+func (o *catchable) Catch(cs ...FuncCatch) Catchable {
 	o.cc = cs
 	return o
 }
 
 // Finally
 // 注册最终回调.
-func (o *catchable) Finally(cs ...Finally) Catchable {
+func (o *catchable) Finally(cs ...FuncFinally) Catchable {
 	o.cf = cs
 	return o
 }
 
 // Ignore
 // 注册忽略回调.
-func (o *catchable) Ignore(cs ...Ignore) Catchable {
+func (o *catchable) Ignore(cs ...FuncIgnore) Catchable {
 	o.ci = cs
 	return o
 }
 
 // Panic
 // 注册异常回调.
-func (o *catchable) Panic(c Panic) Catchable {
+func (o *catchable) Panic(c FuncPanic) Catchable {
 	o.cp = c
 	return o
 }
 
 // Try
 // 注册尝试回调.
-func (o *catchable) Try(cs ...Try) Catchable {
+func (o *catchable) Try(cs ...FuncTry) Catchable {
 	o.ct = cs
 	return o
 }
@@ -117,7 +117,7 @@ func (o *catchable) Run(ctx context.Context) (err error) {
 
 	// 2. 前置执行.
 	//    遍历可忽略回调, 任一回调返回 true 时退出, 因前置致退出时也会
-	//    忽略已注册的 Try/Catch/Finally 回调.
+	//    忽略已注册的 FuncTry/FuncCatch/FuncFinally 回调.
 	if len(o.ci) > 0 {
 		for _, c := range o.ci {
 			if ignored, err = o.doIgnore(ctx, c); ignored {
@@ -161,7 +161,7 @@ func (o *catchable) Run(ctx context.Context) (err error) {
 // Callbacks executor.
 // /////////////////////////////////////////////////////////////
 
-func (o *catchable) doCatch(ctx context.Context, callback Catch, err error) (ignored bool) {
+func (o *catchable) doCatch(ctx context.Context, callback FuncCatch, err error) (ignored bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			if o.cp != nil {
@@ -174,7 +174,7 @@ func (o *catchable) doCatch(ctx context.Context, callback Catch, err error) (ign
 	return
 }
 
-func (o *catchable) doFinally(ctx context.Context, callback Finally) (ignored bool) {
+func (o *catchable) doFinally(ctx context.Context, callback FuncFinally) (ignored bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			if o.cp != nil {
@@ -187,7 +187,7 @@ func (o *catchable) doFinally(ctx context.Context, callback Finally) (ignored bo
 	return
 }
 
-func (o *catchable) doIgnore(ctx context.Context, callback Ignore) (ignored bool, err error) {
+func (o *catchable) doIgnore(ctx context.Context, callback FuncIgnore) (ignored bool, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if o.cp != nil {
@@ -201,7 +201,7 @@ func (o *catchable) doIgnore(ctx context.Context, callback Ignore) (ignored bool
 	return
 }
 
-func (o *catchable) doTry(ctx context.Context, callback Try) (ignored bool, err error) {
+func (o *catchable) doTry(ctx context.Context, callback FuncTry) (ignored bool, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if o.cp != nil {

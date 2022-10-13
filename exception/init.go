@@ -5,20 +5,20 @@
 //
 //   ctx := log.NewContext()
 //
-//   obj := exception.New().Ignore(
+//   obj := exception.New().FuncIgnore(
 //        func(ctx context.Context) (ignored bool) {
 //            return
 //        },
-//    ).Try(
+//    ).FuncTry(
 //        func(ctx context.Context) (ignored bool) {
 //            panic("panic in try")
 //            return
 //        },
-//    ).Catch(func(ctx context.Context, err interface{}) (ignored bool) {
+//    ).FuncCatch(func(ctx context.Context, err interface{}) (ignored bool) {
 //        return
-//    }).Finally(func(ctx context.Context) (ignored bool) {
+//    }).FuncFinally(func(ctx context.Context) (ignored bool) {
 //        return
-//    }).Panic(func(ctx context.Context, v interface{}) {
+//    }).FuncPanic(func(ctx context.Context, v interface{}) {
 //        println("panic occurred")
 //    })
 //   obj.Run(ctx)
