@@ -74,12 +74,13 @@ func ExampleNew() {
 	// 4. 注册回调/过程处理.
 	proc.Callback(
 		// 回调 1
-		func(ctx context.Context) {
+		func(ctx context.Context) (ignored bool) {
 			fmt.Printf("callback #1.\n")
+			return
 		},
 
 		// 回调 2
-		func(ctx context.Context) {
+		func(ctx context.Context) (ignored bool) {
 			fmt.Printf("callback #2.\n")
 			for {
 				select {
@@ -91,9 +92,10 @@ func ExampleNew() {
 		},
 
 		// 回调 3
-		func(ctx context.Context) {
+		func(ctx context.Context) (ignored bool) {
 			fmt.Printf("callback #3.\n")
 			panic("callback 3")
+			return
 		},
 	)
 

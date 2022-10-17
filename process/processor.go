@@ -219,7 +219,9 @@ func (o *processor) Start(ctx context.Context) (err error) {
 			}()
 
 			for _, c := range o.cc {
-				o.doProcess(o.ctx, c)
+				if o.doProcess(o.ctx, c) {
+					break
+				}
 			}
 		}()
 	}
@@ -277,13 +279,15 @@ func (o *processor) doIgnore(ctx context.Context, callback caller.IgnoreCaller) 
 	return
 }
 
-func (o *processor) doProcess(ctx context.Context, callback caller.ProcessCaller) {
+func (o *processor) doProcess(ctx context.Context, callback caller.ProcessCaller) (ignored bool) {
 	defer func() {
 		if r := recover(); r != nil && o.cp != nil {
+			ignored = true
 			o.cp(ctx, r)
 		}
 	}()
-	callback(ctx)
+	ignored = callback(ctx)
+	return
 }
 
 // /////////////////////////////////////////////////////////////
