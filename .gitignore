@@ -1,4 +1,11 @@
-# ignore
+# directories
 
+.bak
+.directory
 .idea
-bak/
+.vscode
+.DS_STORE
+
+
+# files
+go.sum

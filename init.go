@@ -3,9 +3,4 @@
 
 package util
 
-import "sync"
-
-func init() {
-	new(sync.Once).Do(func() {
-	})
-}
+func init() {}
