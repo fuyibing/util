@@ -27,6 +27,9 @@ const (
 	TypeError  Type = "ERROR"
 	TypeList   Type = "LIST"
 	TypePaging Type = "PAGING"
+
+	ResultFieldForBody  = "body"
+	ResultNameForPaging = "paging"
 )
 
 // NewResult
@@ -35,7 +38,9 @@ func NewResult(dt Type) *Result {
 	return &Result{DataType: dt}
 }
 
-func (o *Result) String() string {
+// Json
+// 转成JSON字符串.
+func (o *Result) Json() string {
 	buf, _ := json.Marshal(o)
 	return string(buf)
 }
