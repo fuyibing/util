@@ -9,6 +9,6 @@ import (
 
 func init() {
 	new(sync.Once).Do(func() {
-		Validate = (&validator{}).init()
+		Validate = (&Validator{}).init()
 	})
 }

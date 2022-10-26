@@ -18,30 +18,15 @@ import (
 var (
 	// Validate
 	// 校验实例.
-	Validate Validator
+	Validate *Validator
 
 	errInvalidJson = fmt.Errorf("无效JSON入参")
 )
 
 type (
 	// Validator
-	// 校验接口.
-	Validator interface {
-		// Register
-		// 注册校验.
-		Register(tag, message string, check func(f i18nValidator.FieldLevel) bool) (err error)
-
-		// Body
-		// 校验入参.
-		Body(v interface{}, body []byte) error
-
-		// Struct
-		// 校验结构体.
-		Struct(v interface{}) error
-	}
-
 	// 校验结构体.
-	validator struct {
+	Validator struct {
 		trans i18nTranslator.Translator
 		valid *i18nValidator.Validate
 	}
@@ -49,7 +34,7 @@ type (
 
 // Register
 // 注册校验.
-func (o *validator) Register(tag, message string, check func(f i18nValidator.FieldLevel) bool) (err error) {
+func (o *Validator) Register(tag, message string, check func(f i18nValidator.FieldLevel) bool) (err error) {
 	if err = o.valid.RegisterValidation(tag, check); err == nil {
 		err = o.valid.RegisterTranslation(tag, o.trans,
 			func(ut i18nTranslator.Translator) error {
@@ -69,7 +54,7 @@ func (o *validator) Register(tag, message string, check func(f i18nValidator.Fie
 
 // Body
 // 校验入参.
-func (o *validator) Body(v interface{}, body []byte) error {
+func (o *Validator) Body(v interface{}, body []byte) error {
 	if err := json.Unmarshal(body, v); err != nil {
 		return errInvalidJson
 	}
@@ -78,7 +63,7 @@ func (o *validator) Body(v interface{}, body []byte) error {
 
 // Struct
 // 校验结构体.
-func (o *validator) Struct(v interface{}) error {
+func (o *Validator) Struct(v interface{}) error {
 	if e0 := o.valid.Struct(v); e0 != nil {
 		for _, e1 := range e0.(i18nValidator.ValidationErrors) {
 			return errors.New(e1.Translate(o.trans))
@@ -88,7 +73,7 @@ func (o *validator) Struct(v interface{}) error {
 }
 
 // 构造实例.
-func (o *validator) init() *validator {
+func (o *Validator) init() *Validator {
 	// 1. 创建实例.
 	o.valid = i18nValidator.New()
 
