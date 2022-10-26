@@ -3,6 +3,10 @@
 
 package response
 
+import (
+	"encoding/json"
+)
+
 type (
 	// Result
 	// 返回结果.
@@ -29,4 +33,9 @@ const (
 // 创建返回结果.
 func NewResult(dt Type) *Result {
 	return &Result{DataType: dt}
+}
+
+func (o *Result) String() string {
+	buf, _ := json.Marshal(o)
+	return string(buf)
 }

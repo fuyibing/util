@@ -4,29 +4,45 @@
 package response
 
 var (
-	Coder CoderManager
+	Coder CodeManager
 )
 
 type (
-	CoderManager interface {
-		Integer(code Code) int
-		SetPlus(plus int) CoderManager
+	CodeManager interface {
+		// Integer
+		// 返回错误码.
+		//
+		// 当错误在[100-999)间有效.
+		Integer(code int) int
+
+		// SetPlus
+		// 设置错误码基数.
+		//
+		// 仅对非HTTP状态码[100-999)有效.
+		SetPlus(plus int) CodeManager
 	}
 
-	coder struct {
+	code struct {
 		plus int
 	}
 )
 
-func (o *coder) Integer(code Code) int {
-	return o.plus + code.Int()
+// Integer
+// 返回错误码.
+func (o *code) Integer(n int) int {
+	if n >= 100 && n < 1000 {
+		return n
+	}
+	return o.plus + n
 }
 
-func (o *coder) SetPlus(plus int) CoderManager {
-	o.plus = plus
+// SetPlus
+// 设置错误码基数.
+func (o *code) SetPlus(n int) CodeManager {
+	o.plus = n
 	return o
 }
 
-func (o *coder) init() *coder {
+func (o *code) init() *code {
 	return o
 }

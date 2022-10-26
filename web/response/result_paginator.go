@@ -8,14 +8,14 @@ type (
 	// Paginator
 	// 分页.
 	Paginator struct {
-		First      int   `json:"first"`
-		Before     int   `json:"before"`
-		Current    int   `json:"current"`
-		Next       int   `json:"next"`
-		Last       int   `json:"last"`
-		Limit      int   `json:"limit"`
-		TotalPages int   `json:"total_pages"`
-		TotalItems int64 `json:"total_items"`
+		First      int   `json:"first" label:"首页"`
+		Before     int   `json:"before" label:"上页"`
+		Current    int   `json:"current" label:"本页"`
+		Next       int   `json:"next" label:"下页"`
+		Last       int   `json:"last" label:"末页"`
+		Limit      int   `json:"limit" label:"每页数量"`
+		TotalPages int   `json:"total_pages" label:"总页数"`
+		TotalItems int64 `json:"total_items" label:"总条数"`
 	}
 )
 

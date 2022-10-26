@@ -10,7 +10,7 @@ import (
 
 // Recover
 // 捕获运行异常.
-func Recover(ctx context.Context, callbacks ...func()) {
+func Recover(callbacks ...func()) {
 	RecoverWithContext(nil, callbacks...)
 }
 
@@ -25,7 +25,7 @@ func RecoverWithContext(ctx context.Context, callbacks ...func()) {
 	}()
 
 	// 2. 遍历回调.
-	for _, call := range callbacks {
-		call()
+	for _, callback := range callbacks {
+		callback()
 	}
 }

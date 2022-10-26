@@ -3,19 +3,6 @@
 
 package response
 
-type (
-	// Code
-	// 错误码.
-	Code int
-)
-
-// 错误码枚举.
 const (
-	_ Code = iota
-
-	UndefinedCode // 内部错误.
+	UndefinedCode = 1
 )
-
-func (o Code) Int() int {
-	return int(o)
-}

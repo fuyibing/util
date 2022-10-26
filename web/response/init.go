@@ -11,7 +11,7 @@ import (
 
 func init() {
 	new(sync.Once).Do(func() {
-		Coder = (&coder{}).init()
+		Coder = (&code{}).init()
 		With = (&with{}).init()
 	})
 }

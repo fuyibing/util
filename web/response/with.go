@@ -11,7 +11,7 @@ type (
 	WithManager interface {
 		Data(v interface{}) *Result
 		Error(err error) *Result
-		ErrorCode(err error, code Code) *Result
+		ErrorCode(err error, code int) *Result
 		List(v interface{}) *Result
 		Paging(v interface{}, total int64, limit, page int) *Result
 		Succeed() *Result
@@ -42,8 +42,9 @@ func (o *with) Error(err error) *Result {
 	return o.ErrorCode(err, UndefinedCode)
 }
 
-func (o *with) ErrorCode(err error, code Code) *Result {
+func (o *with) ErrorCode(err error, code int) *Result {
 	r := NewResult(TypeError)
+	r.Data = defaultOnData
 	r.Errno = Coder.Integer(code)
 	r.Error = err.Error()
 	return r
