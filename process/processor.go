@@ -132,14 +132,13 @@ func (o *processor) Panic(c caller.PanicCaller) Processor {
 
 // Start
 // 启动进程.
-func (o *processor) Start(ctx context.Context) (err error) {
+func (o *processor) Start(ctx context.Context) error {
 	o.mu.Lock()
 
 	// 1. 重复启动.
 	if o.running {
 		o.mu.Unlock()
-		err = errRunningAlready
-		return
+		return errRunningAlready
 	}
 
 	// 2. 开始启动.
@@ -151,7 +150,6 @@ func (o *processor) Start(ctx context.Context) (err error) {
 		// 3.1 捕获异常.
 		if r := recover(); r != nil && o.cp != nil {
 			o.cp(ctx, r)
-			err = fmt.Errorf("%v", r)
 		}
 
 		// 3.2 退上下文.
@@ -161,10 +159,7 @@ func (o *processor) Start(ctx context.Context) (err error) {
 
 		// 3.3 后置执行.
 		for _, c := range o.ca {
-			if co, ce := o.doIgnore(ctx, c); co {
-				if ce != nil {
-					err = ce
-				}
+			if ci, _ := o.doIgnore(ctx, c); ci {
 				break
 			}
 		}
@@ -177,11 +172,8 @@ func (o *processor) Start(ctx context.Context) (err error) {
 
 	// 4. 前置执行.
 	for _, c := range o.cb {
-		if co, ce := o.doIgnore(ctx, c); co {
-			if ce != nil {
-				err = ce
-			}
-			break
+		if ci, ce := o.doIgnore(ctx, c); ci {
+			return ce
 		}
 	}
 
@@ -193,12 +185,12 @@ func (o *processor) Start(ctx context.Context) (err error) {
 			defer o.mu.RUnlock()
 			return o.restart == false
 		}() {
-			return
+			return nil
 		}
 
 		// 5.2 上游退出.
-		if ctx == nil && ctx.Err() != nil {
-			return
+		if ctx == nil || ctx.Err() != nil {
+			return nil
 		}
 
 		// 5.3 启动过程.
