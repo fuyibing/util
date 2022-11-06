@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/fuyibing/util/v2/caller"
 )
@@ -15,6 +16,10 @@ type (
 	// Processor
 	// 模拟进程接口.
 	Processor interface {
+		// Add
+		// 添加子进程.
+		Add(ps ...Processor) Processor
+
 		// After
 		// 后置回调.
 		//
@@ -82,6 +87,8 @@ type (
 		name             string
 		running, restart bool
 
+		children []Processor
+
 		ca, cb []caller.IgnoreCaller
 		cc     []caller.ProcessCaller
 		cp     caller.PanicCaller
@@ -91,7 +98,17 @@ type (
 // New
 // 创建模拟进程.
 func New(name string) Processor {
-	return (&processor{name: name}).init()
+	return (&processor{
+		children: make([]Processor, 0),
+		name:     name,
+	}).init()
+}
+
+// Add
+// 添加子进程.
+func (o *processor) Add(ps ...Processor) Processor {
+	o.children = append(o.children, ps...)
+	return o
 }
 
 // After
@@ -177,9 +194,9 @@ func (o *processor) Start(ctx context.Context) error {
 		}
 	}
 
-	// 5. 执行过程.
+	// 5. 主体过程.
 	for {
-		// 5.1 退出启动.
+		// 5.1 退出主体: 1.
 		if func() bool {
 			o.mu.RLock()
 			defer o.mu.RUnlock()
@@ -188,28 +205,43 @@ func (o *processor) Start(ctx context.Context) error {
 			return nil
 		}
 
-		// 5.2 上游退出.
-		if ctx == nil || ctx.Err() != nil {
-			return nil
-		}
-
-		// 5.3 启动过程.
+		// 5.2 恢复状态.
 		o.mu.Lock()
 		o.restart = false
 		o.mu.Unlock()
 
+		// 5.3 退出主体: 2.
+		if ctx == nil || ctx.Err() != nil {
+			return nil
+		}
+
+		// 5.4 执行主体.
 		func() {
 			o.mu.Lock()
 			o.ctx, o.cancel = context.WithCancel(ctx)
 			o.mu.Unlock()
 
+			// 5.4.2 主体退出.
 			defer func() {
+				// 撤销主体.
+				if o.ctx.Err() == nil {
+					o.cancel()
+				}
+
+				// 等子进程.
+				o.childWait()
+
+				// 重置主体.
 				o.mu.Lock()
 				o.ctx = nil
 				o.cancel = nil
 				o.mu.Unlock()
 			}()
 
+			// 5.4.3 启子进程.
+			o.childStart(o.ctx)
+
+			// 5.4.3 执行主回调.
 			for _, c := range o.cc {
 				if o.doProcess(o.ctx, c) {
 					break
@@ -256,6 +288,24 @@ func (o *processor) Restart() {
 // /////////////////////////////////////////////////////////////
 // Callback callers execution.
 // /////////////////////////////////////////////////////////////
+
+func (o *processor) childStart(ctx context.Context) {
+	for _, c := range o.children {
+		go func(p Processor) {
+			_ = p.Start(ctx)
+		}(c)
+	}
+}
+
+func (o *processor) childWait() {
+	for _, c := range o.children {
+		if !c.Stopped() {
+			time.Sleep(time.Millisecond * 10)
+			o.childWait()
+			return
+		}
+	}
+}
 
 func (o *processor) doIgnore(ctx context.Context, callback caller.IgnoreCaller) (ignored bool, err error) {
 	defer func() {
