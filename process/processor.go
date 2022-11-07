@@ -140,6 +140,12 @@ func (o *processor) Healthy() bool {
 	return o.ctx != nil && o.ctx.Err() == nil
 }
 
+// Name
+// 进程名称.
+func (o *processor) Name() string {
+	return o.name
+}
+
 // Panic
 // 注册异常回调.
 func (o *processor) Panic(c caller.PanicCaller) Processor {

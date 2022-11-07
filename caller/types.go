@@ -10,6 +10,10 @@ import "context"
 // /////////////////////////////////////////////////////////////
 
 type (
+	// ErrorCaller
+	// 错误回调.
+	ErrorCaller func(ctx context.Context, err error)
+
 	// IgnoreCaller
 	// 忽略回调.
 	//
