@@ -47,6 +47,10 @@ type (
 		// 进程已启动且未收到退出信息时返回 true, 反之返回 false.
 		Healthy() bool
 
+		// Name
+		// 获取进程名称.
+		Name() string
+
 		// Panic
 		// 捕获异常.
 		//
