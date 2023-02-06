@@ -271,7 +271,7 @@ func (o *processor) Stop() {
 		o.cancel()
 		return
 	}
-	o.mu.RUnlock()
+	o.mu.Unlock()
 }
 
 // Stopped
