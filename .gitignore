@@ -1,0 +1,9 @@
+# directories
+
+.idea
+.vscode
+.DS_STORE
+
+
+# files
+go.sum
