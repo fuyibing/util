@@ -269,7 +269,7 @@ func (o *processor) doHandler(ctx context.Context, handler Handler) (ignored boo
 		r := recover()
 
 		// Success called.
-		if r != nil {
+		if r == nil {
 			return
 		}
 
