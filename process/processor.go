@@ -300,7 +300,7 @@ func (o *processor) add(ps ...Processor) Processor {
 
 func (o *processor) del(ps ...Processor) Processor {
 	for _, p := range ps {
-		go o.delProcessor(p)
+		o.delProcessor(p)
 	}
 	return o
 }
