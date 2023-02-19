@@ -65,6 +65,12 @@ type (
 		// Called frequency: N.
 		Panic(c PanicHandler) Processor
 
+		// RemoveFromParent
+		// remove from parent if enabled..
+		//
+		// Default: false
+		RemoveFromParent(rm bool) Processor
+
 		// Restart
 		// stop handlers which registered by Callback method,
 		// then start again.
@@ -89,6 +95,8 @@ type (
 
 		mu               sync.RWMutex
 		name             string
+		parent           Processor
+		parentRemove     bool
 		running, restart bool
 
 		children   map[string]Processor
@@ -106,13 +114,14 @@ func New(name string) Processor {
 	}).init()
 }
 
-func (o *processor) Add(ps ...Processor) Processor    { return o.add(ps...) }
-func (o *processor) After(cs ...Handler) Processor    { o.ca = cs; return o }
-func (o *processor) Del(ps ...Processor) Processor    { return o.del(ps...) }
-func (o *processor) Before(cs ...Handler) Processor   { o.cb = cs; return o }
-func (o *processor) Callback(cs ...Handler) Processor { o.cc = cs; return o }
-func (o *processor) Name() string                     { return o.name }
-func (o *processor) Panic(c PanicHandler) Processor   { o.cp = c; return o }
+func (o *processor) Add(ps ...Processor) Processor      { return o.add(ps...) }
+func (o *processor) After(cs ...Handler) Processor      { o.ca = cs; return o }
+func (o *processor) Del(ps ...Processor) Processor      { return o.del(ps...) }
+func (o *processor) Before(cs ...Handler) Processor     { o.cb = cs; return o }
+func (o *processor) Callback(cs ...Handler) Processor   { o.cc = cs; return o }
+func (o *processor) Name() string                       { return o.name }
+func (o *processor) Panic(c PanicHandler) Processor     { o.cp = c; return o }
+func (o *processor) RemoveFromParent(rm bool) Processor { o.parentRemove = rm; return o }
 
 func (o *processor) Healthy() bool {
 	o.mu.RLock()
@@ -171,6 +180,11 @@ func (o *processor) Start(ctx context.Context) error {
 		o.mu.Lock()
 		o.running = false
 		o.mu.Unlock()
+
+		// Remove from parent.
+		if o.parentRemove && o.parent != nil {
+			o.parent.Del(o)
+		}
 	}()
 
 	// Call registered before handlers. Quit next handlers
@@ -277,6 +291,7 @@ func (o *processor) add(ps ...Processor) Processor {
 			continue
 		}
 
+		p.(*processor).parent = o
 		o.children[k] = p
 	}
 
