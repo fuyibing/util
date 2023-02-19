@@ -47,6 +47,10 @@ type (
 		// Called frequency: N.
 		Callback(cs ...Handler) Processor
 
+		// Del
+		// remove child process.
+		Del(ps ...Processor) Processor
+
 		// Healthy
 		// return processor status.
 		Healthy() bool
@@ -87,7 +91,7 @@ type (
 		name             string
 		running, restart bool
 
-		children   []Processor
+		children   map[string]Processor
 		ca, cb, cc []Handler
 		cp         PanicHandler
 	}
@@ -97,13 +101,14 @@ type (
 // create and return processor interface.
 func New(name string) Processor {
 	return (&processor{
-		children: make([]Processor, 0),
+		children: make(map[string]Processor, 0),
 		name:     name,
 	}).init()
 }
 
-func (o *processor) Add(ps ...Processor) Processor    { o.children = append(o.children, ps...); return o }
+func (o *processor) Add(ps ...Processor) Processor    { return o.add(ps...) }
 func (o *processor) After(cs ...Handler) Processor    { o.ca = cs; return o }
+func (o *processor) Del(ps ...Processor) Processor    { return o.del(ps...) }
 func (o *processor) Before(cs ...Handler) Processor   { o.cb = cs; return o }
 func (o *processor) Callback(cs ...Handler) Processor { o.cc = cs; return o }
 func (o *processor) Name() string                     { return o.name }
@@ -261,6 +266,42 @@ func (o *processor) Stopped() bool {
 // /////////////////////////////////////////////////////////////
 // Callback callers execution.
 // /////////////////////////////////////////////////////////////
+
+func (o *processor) add(ps ...Processor) Processor {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+
+	for _, p := range ps {
+		k := p.Name()
+		if _, ok := o.children[k]; ok {
+			continue
+		}
+
+		o.children[k] = p
+	}
+
+	return o
+}
+
+func (o *processor) del(ps ...Processor) Processor {
+	for _, p := range ps {
+		go o.delProcessor(p)
+	}
+	return o
+}
+
+func (o *processor) delProcessor(p Processor) {
+	for {
+		if p.Stopped() {
+			o.mu.Lock()
+			delete(o.children, p.Name())
+			o.mu.Unlock()
+			break
+		}
+
+		time.Sleep(time.Millisecond * 10)
+	}
+}
 
 func (o *processor) doHandler(ctx context.Context, handler Handler) (ignored bool, err error) {
 	// Catch handler panic
