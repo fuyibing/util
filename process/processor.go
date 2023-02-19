@@ -51,6 +51,14 @@ type (
 		// remove child process.
 		Del(ps ...Processor) Processor
 
+		// GetChild
+		// return child processor.
+		GetChild(k string) (Processor, bool)
+
+		// GetParent
+		// return parent processor.
+		GetParent() Processor
+
 		// Healthy
 		// return processor status.
 		Healthy() bool
@@ -122,6 +130,19 @@ func (o *processor) Callback(cs ...Handler) Processor   { o.cc = cs; return o }
 func (o *processor) Name() string                       { return o.name }
 func (o *processor) Panic(c PanicHandler) Processor     { o.cp = c; return o }
 func (o *processor) RemoveFromParent(rm bool) Processor { o.parentRemove = rm; return o }
+
+func (o *processor) GetChild(k string) (Processor, bool) {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+	if v, ok := o.children[k]; ok {
+		return v, true
+	}
+	return nil, false
+}
+
+func (o *processor) GetParent() Processor {
+	return o.parent
+}
 
 func (o *processor) Healthy() bool {
 	o.mu.RLock()
