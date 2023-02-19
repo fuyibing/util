@@ -158,7 +158,7 @@ func (o *processor) Restart() {
 		o.cancel()
 		return
 	}
-	o.mu.RUnlock()
+	o.mu.Unlock()
 }
 
 func (o *processor) Start(ctx context.Context) error {
