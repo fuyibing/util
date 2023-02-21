@@ -13,55 +13,54 @@ import (
 )
 
 type (
-	// IgnoreHandler
-	// process callback handler.
+	// Event
+	// auto called in process lifetime.
 	//
-	// If return value is true, ignore next handlers in heap.
-	IgnoreHandler func(ctx context.Context) (ignored bool)
+	// Process will ignore next events in heap if return value is
+	// false, otherwise call next events by registered order.
+	Event func(ctx context.Context) (ignored bool)
 
-	// PanicHandler
-	// process callback handler.
-	//
-	// Called when panic occurred at runtime, then ignore next
-	// handlers in heap.
-	PanicHandler func(ctx context.Context, v interface{})
+	// PanicEvent
+	// auto called if panic occurred in event.
+	PanicEvent func(ctx context.Context, v interface{})
 
 	// Processor
 	// run like os process.
 	Processor interface {
 		// Add
-		// child processes into heap.
+		// subprocesses into process.
 		Add(ps ...Processor) Processor
 
 		// After
-		// register after handlers into heap.
-		After(cs ...IgnoreHandler) Processor
+		// register after events.
+		After(es ...Event) Processor
 
 		// Before
-		// register before handlers into heap.
-		Before(cs ...IgnoreHandler) Processor
+		// register before events.
+		Before(es ...Event) Processor
 
 		// Callback
-		// register main handlers into heap.
-		Callback(cs ...IgnoreHandler) Processor
+		// register main events.
+		Callback(es ...Event) Processor
 
 		// Del
-		// child processes from heap.
+		// subprocesses from process.
 		Del(ps ...Processor) Processor
 
 		// Get
-		// return child process from heap.
+		// return subprocess of process.
 		Get(name string) (process Processor, exists bool)
 
 		// GetParent
-		// return parent process.
+		// return parent process, return nil if this role
+		// is not a subprocess.
 		GetParent() (process Processor)
 
 		// Healthy
-		// return process health status.
+		// return health status.
 		//
 		// Return true if process context built and cancelled
-		// signal not received.
+		// signal never received.
 		Healthy() bool
 
 		// Name
@@ -71,30 +70,38 @@ type (
 		Name() string
 
 		// Panic
-		// register panic handler on process.
-		Panic(cp PanicHandler) Processor
+		// register panic event.
+		Panic(cp PanicEvent) Processor
 
 		// Restart process.
 		Restart()
 
 		// Start process.
 		//
-		// Return error if started already.
+		// Return error if started already or is starting or is
+		// stopping or is restarting.
 		Start(ctx context.Context) error
+
+		// StartChild start subprocess.
+		StartChild(name string) error
 
 		// Stop process.
 		Stop()
 
 		// Stopped
-		// return process status is stopped already.
+		// return process status is stopped already, return true if
+		// never start.
 		Stopped() bool
 
 		// UnbindWhenStopped
-		// config process unbind switch.
+		// config process unbind type.
+		//
+		// If true set, notify parent process remove subprocess
+		// when stopped.
 		UnbindWhenStopped(b bool) Processor
 
 		// Bind
-		// parent process on this.
+		// parent event on this.
 		bind(p Processor) Processor
 	}
 
@@ -106,11 +113,11 @@ type (
 		name          string
 		running, redo bool
 
-		children   map[string]Processor
-		ca, cb, cc []IgnoreHandler
-		cp         PanicHandler
-		parent     Processor
-		parentUws  bool
+		ae, be, ce     []Event
+		pe             PanicEvent
+		parent         Processor
+		subprocesses   map[string]Processor
+		unbindWhenStop bool
 	}
 )
 
@@ -129,47 +136,43 @@ func New(name string) Processor {
 // /////////////////////////////////////////////////////////////
 
 func (o *processor) Add(ps ...Processor) Processor                    { return o.add(ps) }
-func (o *processor) After(cs ...IgnoreHandler) Processor              { o.ca = cs; return o }
-func (o *processor) Before(cs ...IgnoreHandler) Processor             { o.cb = cs; return o }
-func (o *processor) Callback(cs ...IgnoreHandler) Processor           { o.cc = cs; return o }
+func (o *processor) After(cs ...Event) Processor                      { o.ae = cs; return o }
+func (o *processor) Before(cs ...Event) Processor                     { o.be = cs; return o }
+func (o *processor) Callback(cs ...Event) Processor                   { o.ce = cs; return o }
 func (o *processor) Del(ps ...Processor) Processor                    { return o.del(ps) }
 func (o *processor) Get(name string) (process Processor, exists bool) { return o.get(name) }
 func (o *processor) GetParent() (process Processor)                   { return o.getParent() }
 func (o *processor) Healthy() bool                                    { return o.healthy() }
 func (o *processor) Name() string                                     { return o.name }
-func (o *processor) Panic(cp PanicHandler) Processor                  { o.cp = cp; return o }
+func (o *processor) Panic(cp PanicEvent) Processor                    { o.pe = cp; return o }
 func (o *processor) Restart()                                         { o.restart() }
 func (o *processor) Start(ctx context.Context) error                  { return o.start(ctx) }
+func (o *processor) StartChild(name string) error                     { return o.startChild(name) }
 func (o *processor) Stop()                                            { o.stop() }
 func (o *processor) Stopped() bool                                    { return o.stopped() }
-func (o *processor) UnbindWhenStopped(b bool) Processor               { o.parentUws = b; return o }
+func (o *processor) UnbindWhenStopped(b bool) Processor               { o.unbindWhenStop = b; return o }
 
 // /////////////////////////////////////////////////////////////
 // Access methods.
 // /////////////////////////////////////////////////////////////
 
 // Add
-// child processes into heap.
+// subprocesses into process.
 func (o *processor) add(ps []Processor) Processor {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 
-	// Range processes
-	// then add to heap.
 	for _, p := range ps {
-		// Ignore if exists.
-		if _, ok := o.children[p.Name()]; ok {
+		if _, ok := o.subprocesses[p.Name()]; ok {
 			continue
 		}
-
-		// Update children.
-		o.children[p.Name()] = p.bind(o)
+		o.subprocesses[p.Name()] = p.bind(o)
 	}
 	return o
 }
 
 // Bind
-// parent process on this.
+// parent event on this.
 func (o *processor) bind(p Processor) Processor {
 	o.mu.Lock()
 	defer o.mu.Unlock()
@@ -178,27 +181,25 @@ func (o *processor) bind(p Processor) Processor {
 }
 
 // Del
-// child processes from heap.
+// subprocesses from process.
 func (o *processor) del(ps []Processor) Processor {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 
-	// Range processes
-	// then delete from heap if exists.
 	for _, p := range ps {
-		if _, ok := o.children[p.Name()]; ok {
-			delete(o.children, p.Name())
+		if _, ok := o.subprocesses[p.Name()]; ok {
+			delete(o.subprocesses, p.Name())
 		}
 	}
 	return o
 }
 
 // Get
-// return child process.
+// return subprocess.
 func (o *processor) get(name string) (process Processor, exists bool) {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
-	process, exists = o.children[name]
+	process, exists = o.subprocesses[name]
 	return
 }
 
@@ -218,12 +219,10 @@ func (o *processor) healthy() bool {
 	return o.ctx != nil && o.ctx.Err() == nil
 }
 
-// Init
-// process fields.
 func (o *processor) init() *processor {
-	o.children = make(map[string]Processor)
+	o.subprocesses = make(map[string]Processor)
 	o.mu = sync.RWMutex{}
-	o.parentUws = false
+	o.unbindWhenStop = false
 	o.initState()
 	return o
 }
@@ -239,8 +238,6 @@ func (o *processor) restart() {
 		o.mu.Lock()
 		o.redo = true
 		o.mu.Unlock()
-
-		// Send cancel signal.
 		o.cancel()
 	}
 }
@@ -252,7 +249,7 @@ func (o *processor) start(ctx context.Context) (err error) {
 	// Return repeat running error.
 	if o.running {
 		o.mu.Unlock()
-		return fmt.Errorf("process '%s' running", o.name)
+		return fmt.Errorf("process '%s' was started already", o.name)
 	}
 
 	// Set process status as running
@@ -262,25 +259,24 @@ func (o *processor) start(ctx context.Context) (err error) {
 	// Set process status as stopped.
 	defer func() {
 		// Delete from parent.
-		if o.parentUws && o.parent != nil {
+		if o.unbindWhenStop && o.parent != nil {
 			o.parent.Del(o)
 		}
 
-		// Revert status.
 		o.mu.Lock()
-		defer o.mu.Unlock()
 		o.initState()
+		o.mu.Unlock()
 	}()
 
-	// Call before handlers.
-	if ci, ce := o.doHandlers(ctx, o.cb); ci {
+	// Call before events.
+	if ci, ce := o.doHandlers(ctx, o.be); ci {
 		return ce
 	}
 
-	// Call after handlers, override err result if error
-	// returned by any after handler.
+	// Call after events, override result if error returned by
+	// any event.
 	defer func(c context.Context) {
-		if _, ce := o.doHandlers(c, o.ca); ce != nil && err == nil {
+		if _, ce := o.doHandlers(c, o.ae); ce != nil && err == nil {
 			err = ce
 			return
 		}
@@ -290,7 +286,7 @@ func (o *processor) start(ctx context.Context) (err error) {
 	// received.
 	for {
 		// Return
-		// for parent context cancelled error.
+		// for parent context cancelled.
 		if ctx == nil || ctx.Err() != nil {
 			return
 		}
@@ -319,12 +315,12 @@ func (o *processor) start(ctx context.Context) (err error) {
 		// Call main handlers.
 		err = func(c context.Context, cc context.CancelFunc) error {
 			defer cc()
-			_, ce := o.doHandlers(c, o.cc)
+			_, ce := o.doHandlers(c, o.ce)
 			return ce
 		}(o.ctx, o.cancel)
 
-		// Stop children, block coroutine until child processes
-		// stopped.
+		// Stop subprocesses, block coroutine until all
+		// subprocesses stopped.
 		o.doChildStopped()
 
 		// Destroy process context.
@@ -335,14 +331,32 @@ func (o *processor) start(ctx context.Context) (err error) {
 	}
 }
 
+// startChild start subprocess.
+func (o *processor) startChild(name string) (err error) {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+
+	p, exists := o.subprocesses[name]
+	if !exists {
+		err = fmt.Errorf("subprocess '%s' not found", name)
+		return
+	}
+
+	if !p.Stopped() {
+		err = fmt.Errorf("subprocess '%s' started already", name)
+		return
+	}
+
+	go func() { _ = p.Start(o.ctx) }()
+	return
+}
+
 // Stop process.
 func (o *processor) stop() {
 	if o.healthy() {
 		o.mu.Lock()
 		o.redo = false
 		o.mu.Unlock()
-
-		// Send cancel signal.
 		o.cancel()
 	}
 }
@@ -365,9 +379,8 @@ func (o *processor) doCatch(ctx context.Context) (c, ci bool, ce error) {
 		ci = true
 		ce = fmt.Errorf("%v", v)
 
-		// Call panic callback.
-		if o.cp != nil {
-			o.cp(ctx, v)
+		if o.pe != nil {
+			o.pe(ctx, v)
 		}
 	}
 	return
@@ -377,7 +390,7 @@ func (o *processor) doChildStart(ctx context.Context) {
 	for _, child := range func() map[string]Processor {
 		o.mu.RLock()
 		defer o.mu.RUnlock()
-		return o.children
+		return o.subprocesses
 	}() {
 		if child.Stopped() {
 			go func(c context.Context, p Processor) {
@@ -391,14 +404,12 @@ func (o *processor) doChildStopped() (stopped bool) {
 	for _, child := range func() map[string]Processor {
 		o.mu.RLock()
 		defer o.mu.RUnlock()
-		return o.children
+		return o.subprocesses
 	}() {
-		// Stopped already.
 		if child.Stopped() {
 			continue
 		}
 
-		// Send stop signal if health.
 		if child.Healthy() {
 			child.Stopped()
 		}
@@ -409,9 +420,7 @@ func (o *processor) doChildStopped() (stopped bool) {
 	return true
 }
 
-func (o *processor) doHandlers(ctx context.Context, handlers []IgnoreHandler) (ignored bool, err error) {
-	// Override result
-	// if panic occurred.
+func (o *processor) doHandlers(ctx context.Context, handlers []Event) (ignored bool, err error) {
 	defer func() {
 		if c, ci, ce := o.doCatch(ctx); c {
 			err = ce
@@ -419,7 +428,6 @@ func (o *processor) doHandlers(ctx context.Context, handlers []IgnoreHandler) (i
 		}
 	}()
 
-	// Range handlers, break false returned by any handler
 	for _, handler := range handlers {
 		if ignored = handler(ctx); ignored {
 			break
