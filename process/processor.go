@@ -373,19 +373,6 @@ func (o *processor) stopped() bool {
 // lifetime method.
 // /////////////////////////////////////////////////////////////
 
-func (o *processor) doCatch(ctx context.Context) (c, ci bool, ce error) {
-	if v := recover(); v != nil {
-		c = true
-		ci = true
-		ce = fmt.Errorf("%v", v)
-
-		if o.pe != nil {
-			o.pe(ctx, v)
-		}
-	}
-	return
-}
-
 func (o *processor) doChildStart(ctx context.Context) {
 	for _, child := range func() map[string]Processor {
 		o.mu.RLock()
@@ -422,9 +409,13 @@ func (o *processor) doChildStopped() (stopped bool) {
 
 func (o *processor) doHandlers(ctx context.Context, handlers []Event) (ignored bool, err error) {
 	defer func() {
-		if c, ci, ce := o.doCatch(ctx); c {
-			err = ce
-			ignored = ci
+		if v := recover(); v != nil {
+			err = fmt.Errorf("%v", v)
+			ignored = true
+
+			if o.pe != nil {
+				o.pe(ctx, v)
+			}
 		}
 	}()
 
