@@ -93,6 +93,10 @@ type (
 		// never start.
 		Stopped() bool
 
+		// Unbind
+		// call parent process delete child.
+		Unbind() Processor
+
 		// UnbindWhenStopped
 		// config process unbind type.
 		//
@@ -150,6 +154,7 @@ func (o *processor) Start(ctx context.Context) error                  { return o
 func (o *processor) StartChild(name string) error                     { return o.startChild(name) }
 func (o *processor) Stop()                                            { o.stop() }
 func (o *processor) Stopped() bool                                    { return o.stopped() }
+func (o *processor) Unbind() Processor                                { return o.unbind() }
 func (o *processor) UnbindWhenStopped(b bool) Processor               { o.unbindWhenStop = b; return o }
 
 // /////////////////////////////////////////////////////////////
@@ -367,6 +372,15 @@ func (o *processor) stopped() bool {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	return !o.running
+}
+
+func (o *processor) unbind() *processor {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+	if o.parent != nil {
+		o.parent.Del(o)
+	}
+	return o
 }
 
 // /////////////////////////////////////////////////////////////
